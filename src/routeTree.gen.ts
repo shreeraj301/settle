@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as SplatRouteImport } from './routes/$'
 import { Route as AppIndexRouteImport } from './routes/app/index'
 import { Route as AppClientsRouteImport } from './routes/app/clients'
 import { Route as AppHelpRouteImport } from './routes/app/help'
@@ -29,6 +30,11 @@ import { Route as App202609ReviewFlagIdRouteImport } from './routes/app/2026-09/
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SplatRoute = SplatRouteImport.update({
+  id: '/$',
+  path: '/$',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AppIndexRoute = AppIndexRouteImport.update({
@@ -109,6 +115,7 @@ const App202609ReviewFlagIdRoute = App202609ReviewFlagIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/$': typeof SplatRoute
   '/app/clients': typeof AppClientsRoute
   '/app/help': typeof AppHelpRoute
   '/app/settings': typeof AppSettingsRoute
@@ -127,6 +134,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/$': typeof SplatRoute
   '/app/clients': typeof AppClientsRoute
   '/app/help': typeof AppHelpRoute
   '/app/settings': typeof AppSettingsRoute
@@ -146,6 +154,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/$': typeof SplatRoute
   '/app/clients': typeof AppClientsRoute
   '/app/help': typeof AppHelpRoute
   '/app/settings': typeof AppSettingsRoute
@@ -166,6 +175,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/$'
     | '/app/clients'
     | '/app/help'
     | '/app/settings'
@@ -184,6 +194,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/$'
     | '/app/clients'
     | '/app/help'
     | '/app/settings'
@@ -202,6 +213,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/$'
     | '/app/clients'
     | '/app/help'
     | '/app/settings'
@@ -221,6 +233,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  SplatRoute: typeof SplatRoute
   AppClientsRoute: typeof AppClientsRoute
   AppHelpRoute: typeof AppHelpRoute
   AppSettingsRoute: typeof AppSettingsRoute
@@ -243,6 +256,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/$': {
+      id: '/$'
+      path: '/$'
+      fullPath: '/$'
+      preLoaderRoute: typeof SplatRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/app/': {
@@ -379,6 +399,7 @@ const App202609ReviewRouteWithChildren = App202609ReviewRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  SplatRoute: SplatRoute,
   AppClientsRoute: AppClientsRoute,
   AppHelpRoute: AppHelpRoute,
   AppSettingsRoute: AppSettingsRoute,

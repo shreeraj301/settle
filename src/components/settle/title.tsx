@@ -22,7 +22,7 @@ const TITLES: [RegExp, string][] = [
 
 export function pageTitle(pathname: string): string {
   for (const [re, title] of TITLES) if (re.test(pathname)) return title;
-  return "Settle";
+  return "This page isn't in the books · Settle";
 }
 
 export function TitleSync() {
@@ -33,7 +33,7 @@ export function TitleSync() {
     if (match) {
       const gstin = decodeURIComponent(match[1]);
       const name = vendors.find((v) => v.gstin === gstin)?.name;
-      document.title = name ? `${name} · Sep 2026 · Settle` : "Vendor · Settle";
+      document.title = name ? `${name} · Settle` : "Vendor · Settle";
       return;
     }
     document.title = pageTitle(pathname);

@@ -1,8 +1,11 @@
+import { configureZod } from "@/lib/zod-config";
 import { createRootRoute, HeadContent, Outlet, Scripts } from "@tanstack/react-router";
-import { PreviewHostBridge } from "@/components/preview-host-bridge";
+import { NotFoundPage } from "@/components/settle/not-found";
 import { ThemeBoot } from "@/components/settle/theme-boot";
 import { TitleSync } from "@/components/settle/title";
 import appCss from "../styles.css?url";
+
+configureZod();
 
 export const Route = createRootRoute({
   head: () => ({
@@ -14,25 +17,22 @@ export const Route = createRootRoute({
       { name: "theme-color", content: "#F5F3EE" },
     ],
     links: [
+      { rel: "icon", href: "/favicon.ico", sizes: "32x32" },
       { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" },
       { rel: "stylesheet", href: appCss },
+      { rel: "preload", href: "/fonts/instrument-serif-latin.woff2", as: "font", type: "font/woff2", crossOrigin: "anonymous" },
+      { rel: "preload", href: "/fonts/inter-latin.woff2", as: "font", type: "font/woff2", crossOrigin: "anonymous" },
       { rel: "manifest", href: "/__grok/manifest.webmanifest" },
       { rel: "apple-touch-icon", href: "/__grok/icon-180.png" },
-      { rel: "preconnect", href: "https://fonts.googleapis.com" },
-      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      {
-        rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Instrument+Serif&family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap",
-      },
     ],
   }),
+  notFoundComponent: NotFoundPage,
   component: () => (
     <html lang="en-IN" suppressHydrationWarning>
       <head>
         <HeadContent />
       </head>
       <body>
-        <PreviewHostBridge />
         <ThemeBoot />
         <TitleSync />
         <Outlet />
