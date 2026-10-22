@@ -29,7 +29,7 @@ test("demo workspace covers every flag type", () => {
   const dateFlag = result.flags.find((f) => f.type === "DATE_PERIOD" && f.level === "medium");
   assert.ok(dateFlag);
   assert.equal(dateFlag.reason.includes("28-08-2026 in books, 28-08-2026"), false);
-  assert.match(dateFlag.reason, /Booked in 09-2026, filed in 08-2026\. Claim it in 08-2026\./);
+  assert.match(dateFlag.reason, /Booked in 09-2026, filed in 08-2026\. Claim it in 08-2026, not 09-2026\./);
   const amount = result.flags.find((f) => f.type === "AMOUNT_MISMATCH" && f.level === "high");
   assert.match(amount?.reason ?? "", /Bill taxable ₹74,000\.00, 2B ₹47,000\.00\. ₹27,000\.00 difference at 5% GST: ₹1,350\.00 tax at stake\./);
   assert.ok(result.matches.length >= 10, `matches ${result.matches.length}`);

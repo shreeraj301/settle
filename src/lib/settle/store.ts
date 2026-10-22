@@ -336,9 +336,9 @@ export const useSettle = create<State>()(
     }),
     {
       name: "settle-shree-ganesh",
-      version: 2,
+      version: 3,
       migrate: (persisted, version) => {
-        if (version < 2) {
+        if (version < 3) {
           const next = fresh();
           return { ...(persisted as object), ...next, actions: [], status: "review", approvedAt: undefined };
         }

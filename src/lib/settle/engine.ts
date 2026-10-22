@@ -272,6 +272,8 @@ function dateFlag(inv: Invoice, linked: TwoBEntry, bankIds: string[], period: st
     reason = `Dated ${formatDate(inv.date)} in books, ${formatDate(linked.date)} in 2B.`;
     if (periodDiff) reason += ` Claim it in ${claim}.`;
     else reason += " Amounts match. This is a date note, not a credit block.";
+  } else if (claim !== mmPeriod(period)) {
+    reason = `Booked in ${booked}, filed in ${filed}. Claim it in ${claim}, not ${mmPeriod(period)}.`;
   } else {
     reason = `Booked in ${booked}, filed in ${filed}. Claim it in ${claim}.`;
   }
