@@ -15,7 +15,7 @@ function Matched() {
   const [open, setOpen] = useState<string | null>(null);
   return (
     <AppShell>
-      <h1 className="text-[28px] font-semibold tracking-tight">Matched bills</h1>
+      <h1 className="settle-h2">Matched bills</h1>
       <p className="mt-1 text-sm text-ink-2">{matches.length} pairs where books and 2B agree.</p>
       <div className="mt-4 overflow-x-auto rounded-2xl border border-line bg-surface">
         <table className="w-full min-w-[720px] text-sm">

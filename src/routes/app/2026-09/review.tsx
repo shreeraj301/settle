@@ -3,11 +3,11 @@ import { useEffect, useMemo, useState } from "react";
 import { AppShell } from "@/components/settle/shell";
 import { Evidence } from "@/components/settle/evidence";
 import { itcSummary } from "@/components/settle/summary";
-import { ConfidencePill, PillButton } from "@/components/settle/ui";
+import { ConfidencePill, PillButton, SeverityPill } from "@/components/settle/ui";
 import { FLAG_LABEL, FLAG_ORDER } from "@/lib/settle/engine";
 import { formatInr } from "@/lib/settle/format";
 import { useSettle } from "@/lib/settle/store";
-import type { Flag, FlagType } from "@/lib/settle/types";
+import type { Flag } from "@/lib/settle/types";
 
 export const Route = createFileRoute("/app/2026-09/review")({
   validateSearch: (search: Record<string, unknown>): { type?: string } => ({
@@ -33,6 +33,7 @@ function Review() {
   const acceptDate = useSettle((s) => s.acceptDate);
   const [filter, setFilter] = useState<string>(search.type || "open");
   const [active, setActive] = useState<string | null>(null);
+  const [sheet, setSheet] = useState(false);
   const [selected, setSelected] = useState<string[]>([]);
   const [gstinDraft, setGstinDraft] = useState("");
   const [reason, setReason] = useState("");
@@ -44,7 +45,8 @@ function Review() {
   const visible = useMemo(() => {
     return flags.filter((f) => {
       if (filter === "open") return f.status === "open";
-      if (filter === "done") return f.status !== "open";
+      if (filter === "follow") return f.status === "follow_up";
+      if (filter === "done") return f.status === "fixed" || f.status === "ignored";
       return f.type === filter && f.status === "open";
     });
   }, [flags, filter]);
@@ -72,12 +74,19 @@ function Review() {
 
   const totals = itcSummary(flags, matches, invoices, twoB);
   const openCount = flags.filter((f) => f.status === "open").length;
+  const followCount = flags.filter((f) => f.status === "follow_up").length;
+  const doneCount = flags.filter((f) => f.status === "fixed" || f.status === "ignored").length;
+  const idx = visible.findIndex((f) => f.id === current?.id);
+  const go = (dir: number) => {
+    const n = visible[idx + dir];
+    if (n) setActive(n.id);
+  };
 
   if (openCount === 0 && filter === "open") {
     return (
       <AppShell step="review">
         <section className="mx-auto max-w-xl rounded-2xl border border-line bg-surface p-8">
-          <h1 className="font-display text-4xl">All clear for September.</h1>
+          <h1 className="settle-h2">All clear for September.</h1>
           <p className="mt-3 text-ink-2">
             Nothing left open. {formatInr(totals.claimable)} can be claimed. Follow-ups sit with vendors until they file.
           </p>
@@ -93,8 +102,10 @@ function Review() {
     <AppShell step="review">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-[28px] font-semibold tracking-tight">Review flags</h1>
-          <p className="text-sm text-ink-2">{openCount} open · {formatInr(totals.atRisk)} still at risk</p>
+          <h1 className="settle-h2">Review flags</h1>
+          <p className="text-sm text-ink-2">
+            {openCount} open · {followCount} with vendors · {formatInr(totals.atRisk)} at risk · {formatInr(totals.follow)} in follow-up
+          </p>
         </div>
       </div>
       <div className="mt-4 flex max-w-full flex-wrap gap-2">
@@ -103,11 +114,12 @@ function Review() {
           const c = flags.filter((f) => f.type === t && f.status === "open").length;
           return <Filter key={t} label={FLAG_LABEL[t]} count={c} on={filter === t} onClick={() => setFilter(t)} disabled={c === 0} />;
         })}
-        <Filter label="Done" count={flags.length - openCount} on={filter === "done"} onClick={() => setFilter("done")} />
+        <Filter label="Follow-up" count={followCount} on={filter === "follow"} onClick={() => setFilter("follow")} />
+        <Filter label="Done" count={doneCount} on={filter === "done"} onClick={() => setFilter("done")} />
       </div>
 
-      <div className="mt-4 grid gap-4 xl:grid-cols-[360px_1fr]">
-        <ul className="space-y-2">
+      <div className="mt-4 grid min-w-0 gap-4 md:grid-cols-[minmax(0,340px)_minmax(0,1fr)]">
+        <ul className="min-w-0 space-y-2">
           {visible.length === 0 && <li className="rounded-xl border border-line bg-surface p-4 text-sm">No flags match these filters. Clear filters.</li>}
           {visible.map((f) => {
             const inv = invoices.find((i) => i.id === f.invoiceId);
@@ -116,21 +128,24 @@ function Review() {
             return (
               <li key={f.id}>
                 <article
-                  className={`w-full rounded-xl border bg-surface p-3 text-left ${on ? "border-accent" : "border-line"}`}
+                  className={`w-full min-w-0 rounded-xl border bg-surface p-3 text-left ${f.status !== "open" ? "flag-resolved" : ""} ${on ? "border-accent" : "border-line"}`}
                 >
-                  <button className="w-full text-left" onClick={() => setActive(f.id)}>
-                    <div className="flex items-center justify-between gap-2">
+                  <button className="w-full min-w-0 text-left" onClick={() => { setActive(f.id); setSheet(true); }}>
+                    <div className="flex flex-wrap items-center justify-between gap-2">
                       <span className="text-sm font-medium">{FLAG_LABEL[f.type]}</span>
-                      <ConfidencePill level={f.level} />
+                      <span className="flex flex-wrap items-center gap-1">
+                        <SeverityPill flag={f} />
+                        <ConfidencePill level={f.level} />
+                      </span>
                     </div>
-                    <p className="mt-1 line-clamp-2 text-sm text-ink-2">{f.reason}</p>
-                    <div className="mt-2 flex items-center justify-between text-sm">
-                      <span className="truncate text-ink-2">{inv?.vendorName ?? row?.vendorName}</span>
-                      <span className="font-mono-num">{formatInr(f.itcImpact)}</span>
+                    <p className="mt-1 text-sm text-ink-2">{f.reason}</p>
+                    <div className="mt-2 flex items-center justify-between gap-3 text-sm">
+                      <span className="wrap-anywhere text-ink-2">{inv?.vendorName ?? row?.vendorName}</span>
+                      <span className="font-mono-num shrink-0 text-sm">{formatInr(f.itcImpact)}</span>
                     </div>
                   </button>
                   {f.status === "open" && (
-                    <label className="mt-2 flex items-center gap-2 text-[12px] text-ink-2">
+                    <label className="mt-2 flex items-center gap-2 text-[13px] text-ink-2">
                       <input
                         type="checkbox"
                         checked={selected.includes(f.id)}
@@ -148,29 +163,72 @@ function Review() {
         </ul>
 
         {current && (
-          <FlagDetail
-            flag={current}
-            locked={locked}
-            gstinDraft={gstinDraft}
-            setGstinDraft={setGstinDraft}
-            reason={reason}
-            setReason={setReason}
-            note={note}
-            setNote={setNote}
-            msg={msg}
-            onFixGstin={() => fixGstin(current.id, gstinDraft)}
-            onAdd={() => addFrom2b(current.id)}
-            onFollow={() => setMsg(followUp([current.id]))}
-            onIgnore={() => {
-              if (!reason) return;
-              ignore([current.id], reason, note);
-              setReason("");
-              setNote("");
-            }}
-            onDate={() => acceptDate(current.id)}
-          />
+          <div className="flag-detail hidden min-h-[520px] min-w-0 md:block">
+            <FlagDetail
+              flag={current}
+              locked={locked}
+              gstinDraft={gstinDraft}
+              setGstinDraft={setGstinDraft}
+              reason={reason}
+              setReason={setReason}
+              note={note}
+              setNote={setNote}
+              msg={msg}
+              onFixGstin={() => fixGstin(current.id, gstinDraft)}
+              onAdd={() => addFrom2b(current.id)}
+              onFollow={() => setMsg(followUp([current.id]))}
+              onIgnore={() => {
+                if (!reason) return;
+                ignore([current.id], reason, note);
+                setReason("");
+                setNote("");
+              }}
+              onDate={() => acceptDate(current.id)}
+            />
+          </div>
         )}
       </div>
+
+      {sheet && current && (
+        <div className="fixed inset-0 z-50 flex flex-col bg-page md:hidden">
+          <div className="flex h-14 items-center border-b border-line px-4">
+            <button className="text-sm font-medium text-accent" onClick={() => setSheet(false)}>
+              Back to flags
+            </button>
+          </div>
+          <div className="min-h-0 flex-1 overflow-y-auto p-4">
+            <FlagDetail
+              flag={current}
+              locked={locked}
+              gstinDraft={gstinDraft}
+              setGstinDraft={setGstinDraft}
+              reason={reason}
+              setReason={setReason}
+              note={note}
+              setNote={setNote}
+              msg={msg}
+              onFixGstin={() => fixGstin(current.id, gstinDraft)}
+              onAdd={() => addFrom2b(current.id)}
+              onFollow={() => setMsg(followUp([current.id]))}
+              onIgnore={() => {
+                if (!reason) return;
+                ignore([current.id], reason, note);
+                setReason("");
+                setNote("");
+              }}
+              onDate={() => acceptDate(current.id)}
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-2 border-t border-line bg-surface p-3">
+            <button className="h-12 rounded-full border border-line text-sm font-medium" onClick={() => go(-1)} disabled={idx <= 0}>
+              Previous
+            </button>
+            <button className="h-12 rounded-full border border-line text-sm font-medium" onClick={() => go(1)} disabled={idx >= visible.length - 1}>
+              Next
+            </button>
+          </div>
+        </div>
+      )}
 
       {selected.length >= 2 && !locked && (
         <div className="fixed inset-x-4 bottom-20 z-40 flex items-center justify-between gap-3 rounded-full border border-line bg-surface px-4 py-2 shadow-[var(--shadow-2)] lg:bottom-6 lg:left-[280px]">
@@ -220,7 +278,7 @@ function Filter({ label, count, on, onClick, disabled }: { label: string; count:
       className={`inline-flex h-10 items-center gap-2 rounded-full px-3 text-[13px] disabled:opacity-40 ${on ? "bg-ink text-[var(--color-bg)]" : "border border-line bg-surface"}`}
     >
       {label}
-      <span className="font-mono-num text-[12px]">{count}</span>
+      <span className="font-mono-num text-[13px]">{count}</span>
     </button>
   );
 }
@@ -252,11 +310,12 @@ function FlagDetail(props: {
 
   return (
     <section className="rounded-2xl border border-line bg-surface p-4 lg:p-6">
-      <div className="flex flex-wrap items-center gap-2">
-        <h2 className="text-xl font-semibold">{FLAG_LABEL[flag.type]}</h2>
-        <ConfidencePill level={flag.level} />
-        <span className="font-mono-num ml-auto text-lg">{formatInr(flag.itcImpact)}</span>
-      </div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h2 className="settle-h2">{FLAG_LABEL[flag.type]}</h2>
+                      <SeverityPill flag={flag} />
+                      <ConfidencePill level={flag.level} />
+                      <span className="font-mono-num ml-auto text-sm">{formatInr(flag.itcImpact)}</span>
+                    </div>
       <p className="mt-2 text-ink-2">{flag.reason}</p>
       <div className="mt-4">
         <Evidence flag={flag} invoice={invoice} twoB={row} bank={lines} />
@@ -272,7 +331,7 @@ function FlagDetail(props: {
             <div className="flex flex-col gap-2 sm:flex-row">
               <input
                 aria-label="Correct GSTIN"
-                className="h-12 flex-1 rounded-md border border-line bg-page px-3 font-mono-num"
+                className="h-12 flex-1 rounded-md border border-line bg-page px-3 font-mono-num text-sm"
                 placeholder={twoGstin}
                 value={props.gstinDraft}
                 onChange={(e) => props.setGstinDraft(e.target.value.toUpperCase())}
@@ -315,5 +374,3 @@ function FlagDetail(props: {
     </section>
   );
 }
-
-void 0 as unknown as FlagType;

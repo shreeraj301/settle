@@ -68,7 +68,7 @@ export function AppShell({ children, step }: { children: ReactNode; step?: strin
           <Link to="/" className="mb-6 flex items-baseline gap-2 px-2">
             <span className="font-display text-[28px] leading-none">Settle</span>
           </Link>
-          <label className="mb-1 px-2 text-[12px] font-medium text-ink-2">Workspace</label>
+          <label className="mb-1 px-2 text-[13px] font-medium text-ink-2">Workspace</label>
           <select
             aria-label="Workspace"
             className="mb-4 h-11 rounded-md border border-line bg-page px-2 text-sm"
@@ -86,7 +86,7 @@ export function AppShell({ children, step }: { children: ReactNode; step?: strin
             <div className="text-[13px] text-ink-2">
               {city} · {periodLabel(period)}
             </div>
-            <div className="mt-1 text-[12px] text-ink-2">{mode === "ca" ? "CA mode" : "Owner mode"}</div>
+            <div className="mt-1 text-[13px] text-ink-2">{mode === "ca" ? "CA mode" : "Owner mode"}</div>
           </div>
           <nav className="flex flex-1 flex-col gap-1 overflow-y-auto">
             {nav.map((item) => {
@@ -101,7 +101,7 @@ export function AppShell({ children, step }: { children: ReactNode; step?: strin
                   <Icon className="size-5" strokeWidth={1.5} />
                   <span className="flex-1">{item.label}</span>
                   {item.badge ? (
-                    <span className="rounded-full bg-danger-tint px-2 text-[12px] font-medium text-danger">{item.badge}</span>
+                    <span className="rounded-full bg-danger-tint px-2 text-[13px] font-medium text-danger">{item.badge}</span>
                   ) : null}
                 </Link>
               );
@@ -124,7 +124,7 @@ export function AppShell({ children, step }: { children: ReactNode; step?: strin
           <header className="sticky top-0 z-20 border-b border-line bg-page/95 px-4 py-3 backdrop-blur-sm lg:px-8">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <div className="text-[12px] font-medium tracking-wide text-ink-2">
+                <div className="text-[13px] font-medium tracking-wide text-ink-2">
                   {business} · {periodLabel(period)}
                 </div>
                 <div className="text-sm">

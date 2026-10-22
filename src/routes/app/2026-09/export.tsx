@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { AppShell } from "@/components/settle/shell";
 import { itcSummary } from "@/components/settle/summary";
@@ -14,8 +14,21 @@ function ExportPage() {
   const invoices = useSettle((s) => s.invoices);
   const twoB = useSettle((s) => s.twoB);
   const business = useSettle((s) => s.businessName);
+  const status = useSettle((s) => s.status);
   const [history, setHistory] = useState<string[]>([]);
   const totals = itcSummary(flags, matches, invoices, twoB);
+
+  if (status !== "approved") {
+    return (
+      <AppShell step="export">
+        <h1 className="settle-h2">Export September</h1>
+        <p className="mt-3 max-w-md text-ink-2">Approve September to export.</p>
+        <Link to="/app/2026-09/approve" className="mt-6 inline-flex h-12 items-center rounded-full bg-accent px-6 font-medium text-[var(--color-accent-ink)] hover:bg-accent-hover">
+          Go to approve
+        </Link>
+      </AppShell>
+    );
+  }
 
   function download(format: "csv" | "json") {
     const rows = flags.map((f) => ({
@@ -69,7 +82,7 @@ function ExportPage() {
 
   return (
     <AppShell step="export">
-      <h1 className="text-[28px] font-semibold tracking-tight">Export September</h1>
+      <h1 className="settle-h2">Export September</h1>
       <p className="mt-1 text-ink-2">
         Totals match the approve screen: claimable {formatInr(totals.claimable)}, at risk {formatInr(totals.atRisk)}.
       </p>

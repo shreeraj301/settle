@@ -159,15 +159,16 @@ export function runMatch(input: {
         const a = inv.taxable;
         const b = linked.taxable;
         const taxOnly = Math.abs(a - b) <= RUPEE && Math.abs(taxOf(inv) - taxOf(linked)) > RUPEE;
+        const taxGap = Math.abs(taxOf(inv) - taxOf(linked));
         flags.push(makeFlag({
           type: "AMOUNT_MISMATCH",
           level: taxOnly ? "medium" : "high",
           invoice: inv,
           twoB: linked,
-          itc: Math.abs(taxOf(inv) - taxOf(linked)) || taxOf(inv),
+          itc: taxGap || taxOf(inv),
           reason: taxOnly
             ? `Tax on your bill is ${formatInr(taxOf(inv))}. GSTR-2B shows ${formatInr(taxOf(linked))}.`
-            : `Your bill says ${formatInr(a)}, your 2B says ${formatInr(b)}. Difference ${formatInr(Math.abs(a - b))}.`,
+            : `Bill taxable value ${formatInr(a)}, 2B ${formatInr(b)}. Tax at stake ${formatInr(taxGap)}.`,
           diffs: [
             { field: "Taxable", books: formatInr(a), twoB: formatInr(b) },
             { field: "Tax", books: formatInr(taxOf(inv)), twoB: formatInr(taxOf(linked)) },
@@ -255,19 +256,37 @@ export function runMatch(input: {
   return { matches, flags, invoices, twoB, bank };
 }
 
+function mmPeriod(period: string): string {
+  const [y, m] = period.split("-");
+  if (!y || !m) return period;
+  return `${m}-${y}`;
+}
+
 function dateFlag(inv: Invoice, linked: TwoBEntry, bankIds: string[], period: string, periodDiff: boolean): Flag {
+  const datesDiffer = Boolean(inv.date && linked.date && inv.date !== linked.date);
+  const booked = inv.date ? mmPeriod(inv.date.slice(0, 7)) : mmPeriod(period);
+  const filed = mmPeriod(linked.returnPeriod);
+  const claim = mmPeriod(linked.returnPeriod);
+  let reason: string;
+  if (datesDiffer) {
+    reason = `Dated ${formatDate(inv.date)} in books, ${formatDate(linked.date)} in 2B.`;
+    if (periodDiff) reason += ` Claim it in ${claim}.`;
+    else reason += " Amounts match. This is a date note, not a credit block.";
+  } else if (claim !== mmPeriod(period)) {
+    reason = `Booked in ${booked}, filed in ${filed}. Claim it in ${claim}, not ${mmPeriod(period)}.`;
+  } else {
+    reason = `Booked in ${booked}, filed in ${filed}. Claim it in ${claim}.`;
+  }
   return makeFlag({
     type: "DATE_PERIOD",
     level: periodDiff ? "medium" : "low",
     invoice: inv,
     twoB: linked,
     itc: periodDiff ? taxOf(inv) : 0,
-    reason: periodDiff
-      ? `Dated ${formatDate(inv.date)} in books, ${formatDate(linked.date)} in 2B. It belongs to ${linked.returnPeriod.slice(5)}-${linked.returnPeriod.slice(0, 4)}.`
-      : `Dated ${formatDate(inv.date)} in books, ${formatDate(linked.date)} in 2B. Amounts match. This is a date note, not a credit block.`,
+    reason,
     diffs: [
       { field: "Date", books: formatDate(inv.date), twoB: formatDate(linked.date) },
-      { field: "Period", books: period, twoB: linked.returnPeriod },
+      { field: "Period", books: mmPeriod(period), twoB: filed },
     ],
     bankIds,
     key: inv.id,

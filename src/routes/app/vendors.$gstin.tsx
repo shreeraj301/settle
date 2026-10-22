@@ -23,7 +23,7 @@ function VendorDetail() {
   return (
     <AppShell>
       <Link to="/app/vendors" className="text-sm text-accent">All vendors</Link>
-      <h1 className="mt-2 text-2xl font-semibold">{vendor.name}</h1>
+      <h1 className="settle-h2 mt-2">{vendor.name}</h1>
       <p className="font-mono-num mt-1 text-sm text-ink-2">{vendor.gstin}</p>
       <h2 className="mt-6 text-sm font-medium text-ink-2">Bills</h2>
       <ul className="mt-2 divide-y divide-line rounded-2xl border border-line bg-surface">

@@ -30,17 +30,18 @@ export function Evidence({
     <div className="grid gap-3 lg:grid-cols-3">
       {cols.map((col) => (
         <section key={col.title} className="rounded-xl border border-line bg-page p-3">
-          <h3 className="text-[12px] font-medium tracking-wide text-ink-2">{col.title}</h3>
+          <h3 className="text-[13px] font-medium tracking-wide text-ink-2">{col.title}</h3>
           <table className="mt-2 w-full text-sm">
             <tbody>
               {col.rows.map(([k, v]) => {
                 const diff = flag.diffs.some((d) => d.field.toLowerCase().includes(k.toLowerCase().slice(0, 4)));
+                const mono = /gstin|invoice|tax|total|amount|period|date/i.test(k);
                 return (
                   <tr key={k + v} className={diff ? "bg-warning-tint" : undefined}>
-                    <th scope="row" className="w-24 py-1 pr-2 text-left text-[12px] font-medium text-ink-2">
+                    <th scope="row" className="w-24 py-1 pr-2 text-left text-[13px] font-medium text-ink-2">
                       {k}
                     </th>
-                    <td className={`py-1 ${diff ? "font-medium" : ""}`}>{v}</td>
+                    <td className={`wrap-anywhere py-1 ${mono ? "font-mono-num text-sm" : ""} ${diff ? "font-medium" : ""}`}>{v}</td>
                   </tr>
                 );
               })}

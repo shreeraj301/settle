@@ -1,5 +1,4 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight } from "lucide-react";
 import { useMemo } from "react";
 import { buildWorkspace } from "@/lib/settle/dataset";
 import { FLAG_LABEL, runMatch } from "@/lib/settle/engine";
@@ -21,24 +20,21 @@ function Landing() {
       <header className="mx-auto flex max-w-6xl items-center justify-between px-5 py-5">
         <span className="font-display text-[32px] leading-none">Settle</span>
         <Link to="/app/start" className="text-sm font-medium text-accent">
-          Open workspace
+          Open the September workspace
         </Link>
       </header>
       <main className="mx-auto grid max-w-6xl gap-12 px-5 pb-20 pt-6 lg:grid-cols-[1.1fr_0.9fr] lg:items-start lg:pt-10">
         <div>
-          <p className="text-[13px] font-medium tracking-wide text-ink-2">GST input credit, explained</p>
-          <h1 className="font-display mt-3 max-w-xl text-[40px] leading-[1.08] sm:text-[56px]">
-            Which credit can you claim this month?
-          </h1>
+          <h1 className="settle-h1 max-w-xl">Which credit can you claim this month?</h1>
           <p className="mt-5 max-w-lg text-lg text-ink-2">
             Settle reads your purchase bills, GSTR-2B and bank statement together. Every mismatch says why, in plain words, with the rows beside it.
           </p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <Link
               to="/app/start"
-              className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-accent px-6 text-[15px] font-medium text-[var(--color-accent-ink)]"
+              className="inline-flex h-12 items-center justify-center rounded-full bg-accent px-6 text-[15px] font-medium text-[var(--color-accent-ink)] hover:bg-accent-hover"
             >
-              Check September bills <ArrowRight className="size-4" />
+              Check September bills
             </Link>
             <Link
               to="/app/2026-09/match"
@@ -47,29 +43,21 @@ function Landing() {
               Open Shree Ganesh Traders
             </Link>
           </div>
-          <ol className="mt-12 grid gap-4 border-t border-line pt-8 sm:grid-cols-3">
-            {[
-              ["1. Bring the files", "Bills, bank statement, and GSTR-2B. Any order."],
-              ["2. See the differences", "GSTIN, amount, date, missing bills, duplicates."],
-              ["3. Fix, then approve", "Edit, link, ask the vendor, or ignore. Then export."],
-            ].map(([t, d]) => (
-              <li key={t}>
-                <div className="font-medium">{t}</div>
-                <p className="mt-1 text-sm text-ink-2">{d}</p>
-              </li>
-            ))}
-          </ol>
+          <p className="mt-12 border-t border-line pt-8 text-ink-2">
+            Upload, match, review, approve, export. Sample data: Shree Ganesh Traders, Aurangabad.
+          </p>
+          <p className="mt-3 max-w-lg text-sm text-ink-2">Correct, add from 2B, ask the vendor, or ignore with a reason.</p>
         </div>
 
         <section aria-label="September working view" className="rounded-2xl border border-line bg-surface p-5 shadow-[var(--shadow-1)]">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <div className="text-[12px] font-medium text-ink-2">Shree Ganesh Traders · Aurangabad</div>
-              <h2 className="font-display text-[28px] leading-tight">{periodLabel("2026-09")}</h2>
+              <div className="text-[13px] font-medium text-ink-2">Shree Ganesh Traders · Aurangabad</div>
+              <h2 className="settle-h2">{periodLabel("2026-09")}</h2>
             </div>
             <div className="text-right">
-              <div className="text-[12px] text-ink-2">Can be claimed</div>
-              <div className="font-mono-num text-xl">{formatInr(preview.totals.claimable)}</div>
+              <div className="text-[13px] text-ink-2">Can be claimed</div>
+              <div className="font-mono-num text-sm">{formatInr(preview.totals.claimable)}</div>
             </div>
           </div>
           <div className="mt-4 grid grid-cols-3 gap-2 text-sm">
@@ -100,7 +88,7 @@ function Landing() {
 function Stat({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-xl bg-page px-3 py-3">
-      <div className="text-[12px] text-ink-2">{label}</div>
+      <div className="text-[13px] text-ink-2">{label}</div>
       <div className="font-mono-num mt-1 text-sm">{value}</div>
     </div>
   );

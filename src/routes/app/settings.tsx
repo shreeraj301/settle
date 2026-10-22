@@ -19,7 +19,7 @@ function Settings() {
   const [ask, setAsk] = useState(false);
   return (
     <AppShell>
-      <h1 className="text-[28px] font-semibold tracking-tight">Settings</h1>
+      <h1 className="settle-h2">Settings</h1>
       <section className="mt-6 max-w-xl space-y-4 rounded-2xl border border-line bg-surface p-5">
         <div>
           <div className="text-sm text-ink-2">Workspace</div>

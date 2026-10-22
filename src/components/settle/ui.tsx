@@ -2,7 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { Check, Copy, X } from "lucide-react";
 import type { ButtonHTMLAttributes, ReactNode } from "react";
 import { useSettle } from "@/lib/settle/store";
-import type { Confidence } from "@/lib/settle/types";
+import type { Confidence, Flag } from "@/lib/settle/types";
 
 export function PillButton({
   children,
@@ -11,7 +11,7 @@ export function PillButton({
   ...props
 }: ButtonHTMLAttributes<HTMLButtonElement> & { tone?: "primary" | "secondary" | "ghost" | "danger" }) {
   const tones: Record<string, string> = {
-    primary: "bg-accent text-[var(--color-accent-ink)] hover:brightness-95",
+    primary: "bg-accent text-[var(--color-accent-ink)] hover:bg-accent-hover",
     secondary: "bg-surface text-ink border border-line hover:bg-[color-mix(in_srgb,var(--color-ink)_4%,transparent)]",
     ghost: "bg-transparent text-ink hover:bg-[color-mix(in_srgb,var(--color-ink)_4%,transparent)]",
     danger: "bg-transparent text-danger hover:bg-danger-tint",
@@ -27,17 +27,37 @@ export function PillButton({
 }
 
 export function ConfidencePill({ level }: { level: Confidence }) {
-  const map = {
-    high: { label: "High", cls: "bg-success-tint text-success", hint: "GSTIN, invoice number and amount line up." },
-    medium: { label: "Medium", cls: "bg-warning-tint text-warning", hint: "Some fields match. Check the difference." },
-    low: { label: "Low", cls: "bg-danger-tint text-danger", hint: "Weak match. Read the evidence before you act." },
-  }[level];
+  const label = level === "high" ? "High" : level === "medium" ? "Medium" : "Low";
+  const hint =
+    level === "high"
+      ? "GSTIN, invoice number and amount line up."
+      : level === "medium"
+        ? "Some fields match. Check the difference."
+        : "Weak match. Read the evidence before you act.";
   return (
-    <span title={map.hint} className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[12px] font-medium ${map.cls}`}>
-      <span className="size-1.5 rounded-full bg-current" aria-hidden />
-      {map.label}
+    <span title={hint} className="inline-flex items-center rounded-full border border-line bg-surface px-2 py-0.5 text-[13px] font-medium text-ink">
+      Match: {label}
     </span>
   );
+}
+
+export type Severity = "blocks" | "vendor" | "note";
+
+export function severityOf(flag: Pick<Flag, "type" | "level" | "itcImpact">): Severity {
+  if ((flag.type === "DATE_PERIOD" || flag.type === "DUPLICATE") && (flag.level === "low" || flag.itcImpact === 0)) return "note";
+  if (flag.type === "MISSING_IN_2B" || flag.type === "SUPPLIER_NOT_FILED") return "vendor";
+  return "blocks";
+}
+
+const SEVERITY_STYLE: Record<Severity, { label: string; cls: string }> = {
+  blocks: { label: "Blocks credit", cls: "bg-danger-tint text-danger" },
+  vendor: { label: "Needs a vendor", cls: "bg-warning-tint text-warning" },
+  note: { label: "Note only", cls: "bg-page text-ink" },
+};
+
+export function SeverityPill({ flag }: { flag: Pick<Flag, "type" | "level" | "itcImpact"> }) {
+  const sev = SEVERITY_STYLE[severityOf(flag)];
+  return <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[13px] font-medium ${sev.cls}`}>{sev.label}</span>;
 }
 
 export function Money({ paise, compact = false, className = "" }: { paise: number; compact?: boolean; className?: string }) {

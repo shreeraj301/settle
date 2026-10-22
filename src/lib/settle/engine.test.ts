@@ -26,6 +26,12 @@ test("demo workspace covers every flag type", () => {
   for (const t of FLAG_ORDER) {
     assert.ok(types.has(t), `missing flag ${t}; have ${[...types].join(",")}`);
   }
+  const dateFlag = result.flags.find((f) => f.type === "DATE_PERIOD" && f.level === "medium");
+  assert.ok(dateFlag);
+  assert.equal(dateFlag.reason.includes("28-08-2026 in books, 28-08-2026"), false);
+  assert.match(dateFlag.reason, /Booked in 08-2026, filed in 08-2026\. Claim it in 08-2026, not 09-2026\./);
+  const amount = result.flags.find((f) => f.type === "AMOUNT_MISMATCH" && f.level === "high");
+  assert.match(amount?.reason ?? "", /Bill taxable value ₹74,000\.00, 2B ₹47,000\.00\. Tax at stake ₹1,350\.00\./);
   assert.ok(result.matches.length >= 10, `matches ${result.matches.length}`);
   assert.ok(result.flags.length >= 8, `flags ${result.flags.length}`);
   const cn = data.invoices.find((i) => i.invoiceNo === "AOD/CN-07");

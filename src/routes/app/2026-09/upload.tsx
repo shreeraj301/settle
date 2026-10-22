@@ -27,7 +27,7 @@ function Upload() {
     <AppShell step="upload">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-[28px] font-semibold tracking-tight">Files for September</h1>
+          <h1 className="settle-h2">Files for September</h1>
           <p className="mt-1 max-w-xl text-ink-2">Three slots. Add them in any order. Matching needs bills and GSTR-2B. Bank is optional.</p>
         </div>
         <Link

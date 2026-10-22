@@ -336,6 +336,14 @@ export const useSettle = create<State>()(
     }),
     {
       name: "settle-shree-ganesh",
+      version: 2,
+      migrate: (persisted, version) => {
+        if (version < 2) {
+          const next = fresh();
+          return { ...(persisted as object), ...next, actions: [], status: "review", approvedAt: undefined };
+        }
+        return persisted as object;
+      },
       partialize: (s) => ({
         invoices: s.invoices,
         twoB: s.twoB,

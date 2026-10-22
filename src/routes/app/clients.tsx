@@ -10,7 +10,7 @@ function Clients() {
   const navigate = useNavigate();
   return (
     <AppShell>
-      <h1 className="text-[28px] font-semibold tracking-tight">Clients</h1>
+      <h1 className="settle-h2">Clients</h1>
       <p className="mt-1 text-sm text-ink-2">Switch the workspace. Shree Ganesh Traders has September already matched.</p>
       <ul className="mt-5 space-y-3">
         {CLIENTS.map((c) => (

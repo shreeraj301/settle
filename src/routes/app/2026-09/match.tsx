@@ -50,7 +50,7 @@ function MatchPage() {
     <AppShell step="match">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-[28px] font-semibold tracking-tight">Matching September</h1>
+          <h1 className="settle-h2">Matching September</h1>
           <p className="mt-1 text-ink-2" aria-live="polite">
             {done ? `${flags.length} flags to review. ${matches.length} bills already agree.` : STAGES[Math.min(stage, STAGES.length - 1)]}
           </p>

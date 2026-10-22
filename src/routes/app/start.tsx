@@ -9,7 +9,7 @@ function Start() {
   return (
     <main className="mx-auto flex min-h-screen max-w-3xl flex-col justify-center px-5 py-12">
       <p className="text-[13px] font-medium text-ink-2">Settle</p>
-      <h1 className="font-display mt-2 text-4xl sm:text-5xl">Which month are we closing?</h1>
+      <h1 className="settle-h1 mt-2">Which month are we closing?</h1>
       <p className="mt-3 max-w-xl text-ink-2">Pick the return period. Then upload your files, or open the books already on this device.</p>
       <label className="mt-8 text-sm font-medium text-ink-2">
         Return period

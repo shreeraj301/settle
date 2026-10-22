@@ -21,7 +21,7 @@ const KEYS: [string, string][] = [
 function Help() {
   return (
     <AppShell>
-      <h1 className="text-[28px] font-semibold tracking-tight">Help</h1>
+      <h1 className="settle-h2">Help</h1>
       <p className="mt-1 max-w-xl text-ink-2">Short meanings. Hover a confidence pill in Review to see why it is High, Medium or Low.</p>
       <dl className="mt-6 max-w-2xl divide-y divide-line rounded-2xl border border-line bg-surface">
         {TERMS.map(([t, d]) => (

@@ -2,6 +2,7 @@ import { createRootRoute, HeadContent, Outlet, Scripts } from "@tanstack/react-r
 import { AuthProvider } from "@/lib/auth/provider";
 import { PreviewHostBridge } from "@/components/preview-host-bridge";
 import { ThemeBoot } from "@/components/settle/theme-boot";
+import { TitleSync } from "@/components/settle/title";
 import appCss from "../styles.css?url";
 
 export const Route = createRootRoute({
@@ -22,7 +23,7 @@ export const Route = createRootRoute({
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,460;9..144,560&family=IBM+Plex+Mono:wght@450;500&family=Inter:wght@400;500;600&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Instrument+Serif&family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap",
       },
     ],
   }),
@@ -35,6 +36,7 @@ export const Route = createRootRoute({
         <PreviewHostBridge />
         <AuthProvider>
           <ThemeBoot />
+          <TitleSync />
           <Outlet />
         </AuthProvider>
         <Scripts />

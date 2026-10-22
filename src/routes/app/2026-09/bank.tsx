@@ -28,7 +28,7 @@ function BankPage() {
   ];
   return (
     <AppShell>
-      <h1 className="text-[28px] font-semibold tracking-tight">Bank lines</h1>
+      <h1 className="settle-h2">Bank lines</h1>
       <p className="mt-1 text-sm text-ink-2">{bank.length} lines this month, including receipts, charges and the GST challan.</p>
       <div className="mt-5 space-y-6">
         {groups.map((g) => (
@@ -40,7 +40,7 @@ function BankPage() {
                 <li key={b.id} className="flex flex-wrap items-center gap-3 px-4 py-3">
                   <span className="w-24 text-sm text-ink-2">{formatDate(b.date)}</span>
                   <span className="min-w-0 flex-1 truncate text-sm">{b.narration}</span>
-                  <span className="rounded-full bg-page px-2 py-0.5 text-[12px]">{KIND[b.kind]}</span>
+                  <span className="rounded-full bg-page px-2 py-0.5 text-[13px]">{KIND[b.kind]}</span>
                   <span className="font-mono-num text-sm">{b.debit ? formatInr(b.debit) : formatInr(b.credit)}</span>
                 </li>
               ))}

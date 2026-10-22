@@ -26,7 +26,7 @@ function FlagPage() {
     <AppShell step="review">
       <Link to="/app/2026-09/review" className="text-sm text-accent">All flags</Link>
       <div className="mt-3 flex flex-wrap items-center gap-2">
-        <h1 className="text-2xl font-semibold">{FLAG_LABEL[flag.type]}</h1>
+        <h1 className="settle-h2">{FLAG_LABEL[flag.type]}</h1>
         <ConfidencePill level={flag.level} />
         <span className="font-mono-num ml-auto">{formatInr(flag.itcImpact)}</span>
       </div>

@@ -24,12 +24,14 @@ function Approve() {
   const totals = useMemo(() => itcSummary(flags, matches, invoices, twoB), [flags, matches, invoices, twoB]);
   const counts = countsByType(flags);
   const openCount = flags.filter((f) => f.status === "open").length;
+  const highOpen = flags.filter((f) => f.status === "open" && f.level === "high").length;
+  const approveLabel = highOpen > 0 ? `Approve September (${highOpen} high flags open)` : "Approve September";
   const max = Math.max(totals.claimable + totals.atRisk + totals.follow, 1);
 
   return (
     <AppShell step="approve">
       <p className="text-[13px] font-medium text-ink-2">{business}</p>
-      <h1 className="font-display mt-1 text-4xl sm:text-5xl">{periodLabel("2026-09")}</h1>
+      <h1 className="settle-h1 mt-1">{periodLabel("2026-09")}</h1>
       {status === "approved" && (
         <p className="mt-3 rounded-xl bg-success-tint px-4 py-3 text-sm text-success">
           Approved on {formatDate(approvedAt?.slice(0, 10))} by you.{" "}
@@ -61,7 +63,9 @@ function Approve() {
       </ul>
       <div className="mt-6 flex flex-wrap gap-3">
         {status !== "approved" ? (
-          <PillButton onClick={() => setOpen(true)}>Approve September</PillButton>
+          <PillButton disabled={highOpen > 0} onClick={() => setOpen(true)}>
+            {approveLabel}
+          </PillButton>
         ) : (
           <Link to="/app/2026-09/export" className="inline-flex h-11 items-center rounded-full bg-accent px-5 font-medium text-[var(--color-accent-ink)]">
             Export

@@ -15,7 +15,7 @@ function Vendors() {
   const queue = flags.filter((f) => f.status === "follow_up");
   return (
     <AppShell>
-      <h1 className="text-[28px] font-semibold tracking-tight">Vendors</h1>
+      <h1 className="settle-h2">Vendors</h1>
       <p className="mt-1 text-sm text-ink-2">{queue.length} follow-ups waiting on a reply.</p>
       {queue.length > 0 && (
         <ul className="mt-4 space-y-3">
