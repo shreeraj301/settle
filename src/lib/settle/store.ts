@@ -56,6 +56,34 @@ function uid(prefix: string) {
   return `${prefix}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
+type PeriodSnap = Snapshot & {
+  clientId: string;
+  businessName: string;
+  gstin: string;
+  city: string;
+  actions: Action[];
+  matchedSeen: boolean;
+};
+
+function takeSnap(s: PeriodSnap): PeriodSnap {
+  return {
+    invoices: s.invoices,
+    twoB: s.twoB,
+    bank: s.bank,
+    flags: s.flags,
+    matches: s.matches,
+    vendors: s.vendors,
+    status: s.status,
+    approvedAt: s.approvedAt,
+    clientId: s.clientId,
+    businessName: s.businessName,
+    gstin: s.gstin,
+    city: s.city,
+    actions: s.actions,
+    matchedSeen: s.matchedSeen,
+  };
+}
+
 export type Toast = { id: string; text: string; undo?: boolean };
 
 type State = Snapshot & {
@@ -71,11 +99,14 @@ type State = Snapshot & {
   toasts: Toast[];
   actions: Action[];
   matchedSeen: boolean;
+  periodSnapshots: Record<string, PeriodSnap>;
+  touched: boolean;
   pushToast: (text: string, undo?: boolean) => void;
   dismissToast: (id: string) => void;
   setMode: (m: Mode) => void;
   setTheme: (t: Theme) => void;
   setClient: (id: string) => void;
+  setPeriod: (period: string) => void;
   setHaptics: (v: boolean) => void;
   markMatchedSeen: () => void;
   applyFlag: (flagId: string, patch: Partial<Flag>, label: string, kind: Action["kind"]) => void;
@@ -110,9 +141,11 @@ export const useSettle = create<State>()(
       toasts: [],
       actions: [],
       matchedSeen: false,
+      periodSnapshots: {},
+      touched: false,
       pushToast: (text, undo) => {
         const id = uid("t");
-        set((s) => ({ toasts: [...s.toasts.slice(-1), { id, text, undo }] }));
+        set((s) => ({ toasts: [...s.toasts.slice(-1), { id, text, undo }], touched: true }));
         window.setTimeout(() => get().dismissToast(id), undo ? 10000 : 6000);
       },
       dismissToast: (id) => set((s) => ({ toasts: s.toasts.filter((t) => t.id !== id) })),
@@ -125,26 +158,89 @@ export const useSettle = create<State>()(
       },
       setClient: (id) => {
         const c = CLIENTS.find((x) => x.id === id) ?? CLIENTS[0];
-        if (id === "sgt") {
-          set({ ...fresh(), clientId: "sgt", businessName: c.name, gstin: c.gstin, city: c.city, period: c.period });
-        } else {
-          const empty = fresh();
-          set({
-            ...empty,
-            invoices: [],
-            twoB: [],
-            bank: [],
-            flags: [],
-            matches: [],
-            vendors: [],
-            clientId: id,
-            businessName: c.name,
-            gstin: c.gstin,
-            city: c.city,
-            period: c.period,
-            status: "review",
-          });
+        const cur = get();
+        if (cur.clientId === id) return;
+        let periodSnapshots = cur.periodSnapshots;
+        if (cur.clientId === "sgt" && cur.period === BUSINESS.period && cur.invoices.length) {
+          periodSnapshots = { ...periodSnapshots, [cur.period]: takeSnap(cur) };
         }
+        const keep = { periodSnapshots, touched: true, period: cur.period, mode: cur.mode, theme: cur.theme, haptics: cur.haptics };
+        if (id === "sgt" && cur.period === BUSINESS.period) {
+          const saved = periodSnapshots[cur.period];
+          if (saved?.clientId === "sgt" && saved.invoices.length) {
+            set({ ...saved, ...keep, clientId: c.id, businessName: c.name, gstin: c.gstin, city: c.city });
+            return;
+          }
+          set({ ...fresh(), ...keep, clientId: c.id, businessName: c.name, gstin: c.gstin, city: c.city, actions: [], matchedSeen: false });
+          return;
+        }
+        set({
+          invoices: [],
+          twoB: [],
+          bank: [],
+          flags: [],
+          matches: [],
+          vendors: [],
+          status: "review",
+          approvedAt: undefined,
+          actions: [],
+          matchedSeen: true,
+          clientId: id,
+          businessName: c.name,
+          gstin: c.gstin,
+          city: c.city,
+          ...keep,
+        });
+      },
+      setPeriod: (period) => {
+        if (!/^\d{4}-\d{2}$/.test(period)) return;
+        const cur = get();
+        if (period === cur.period) return;
+        const periodSnapshots = { ...cur.periodSnapshots, [cur.period]: takeSnap(cur) };
+        const saved = periodSnapshots[period];
+        const keep = {
+          mode: cur.mode,
+          theme: cur.theme,
+          haptics: cur.haptics,
+          touched: true,
+          toasts: cur.toasts,
+          periodSnapshots,
+          period,
+        };
+        if (saved) {
+          set({ ...saved, ...keep });
+          return;
+        }
+        if (period === BUSINESS.period && cur.clientId === "sgt") {
+          set({
+            ...fresh(),
+            ...keep,
+            clientId: "sgt",
+            businessName: BUSINESS.name,
+            gstin: BUSINESS.gstin,
+            city: BUSINESS.city,
+            actions: [],
+            matchedSeen: false,
+          });
+          return;
+        }
+        set({
+          invoices: [],
+          twoB: [],
+          bank: [],
+          flags: [],
+          matches: [],
+          vendors: [],
+          status: "review",
+          approvedAt: undefined,
+          actions: [],
+          matchedSeen: true,
+          clientId: cur.clientId,
+          businessName: cur.businessName,
+          gstin: cur.gstin,
+          city: cur.city,
+          ...keep,
+        });
       },
       setHaptics: (haptics) => set({ haptics }),
       markMatchedSeen: () => set({ matchedSeen: true }),
@@ -235,9 +331,11 @@ export const useSettle = create<State>()(
         return msg;
       },
       ignore: (flagIds, reason, note) => {
+        const why = reason.trim();
+        if (!why || flagIds.length === 0) return;
         const label = flagIds.length > 1 ? `Ignored ${flagIds.length} flags.` : "Flag ignored.";
         for (const id of flagIds) {
-          set((s) => ({ flags: withStatus(s.flags, id, { status: "ignored", ignoreReason: reason, note }) }));
+          set((s) => ({ flags: withStatus(s.flags, id, { status: "ignored", ignoreReason: why, note }) }));
         }
         set((s) => ({
           actions: [
@@ -248,7 +346,7 @@ export const useSettle = create<State>()(
               actor: s.mode === "ca" ? "ca" : "owner",
               kind: flagIds.length > 1 ? "bulk" : "ignore",
               before: flagIds,
-              after: { reason, note },
+              after: { reason: why, note },
               label,
             },
           ],
@@ -330,19 +428,21 @@ export const useSettle = create<State>()(
           after: "fresh",
           label: "Workspace reset",
         };
-        set({ ...next, actions: [action], clientId: "sgt", businessName: BUSINESS.name, gstin: BUSINESS.gstin, city: BUSINESS.city });
+        set({ ...next, actions: [action], clientId: "sgt", businessName: BUSINESS.name, gstin: BUSINESS.gstin, city: BUSINESS.city, period: BUSINESS.period, periodSnapshots: {}, touched: true });
         get().pushToast("Workspace reset. Undo if this was a mistake.", true);
       },
     }),
     {
       name: "settle-shree-ganesh",
-      version: 3,
+      version: 4,
       migrate: (persisted, version) => {
+        const base = (persisted ?? {}) as Record<string, unknown>;
         if (version < 3) {
           const next = fresh();
-          return { ...(persisted as object), ...next, actions: [], status: "review", approvedAt: undefined };
+          return { ...base, ...next, actions: [], status: "review", approvedAt: undefined, touched: true, periodSnapshots: {} };
         }
-        return persisted as object;
+        if (version < 4) return { ...base, touched: true, periodSnapshots: base.periodSnapshots ?? {} };
+        return base;
       },
       partialize: (s) => ({
         invoices: s.invoices,
@@ -363,6 +463,8 @@ export const useSettle = create<State>()(
         haptics: s.haptics,
         actions: s.actions,
         matchedSeen: s.matchedSeen,
+        periodSnapshots: s.periodSnapshots,
+        touched: s.touched,
       }),
       onRehydrateStorage: () => (state) => {
         state?.setTheme(state.theme);
@@ -371,6 +473,22 @@ export const useSettle = create<State>()(
     },
   ),
 );
+
+export function booksLoaded(invoices: readonly unknown[], twoB: readonly unknown[]) {
+  return invoices.length > 0 || twoB.length > 0;
+}
+
+export function septemberSaved(s: {
+  hydrated: boolean;
+  touched: boolean;
+  period: string;
+  invoices: readonly unknown[];
+  periodSnapshots: Record<string, { invoices: readonly unknown[] } | undefined>;
+}) {
+  if (!s.hydrated || !s.touched) return false;
+  if (s.period === "2026-09" && s.invoices.length > 0) return true;
+  return (s.periodSnapshots["2026-09"]?.invoices.length ?? 0) > 0;
+}
 
 export function openFlags(flags: Flag[]) {
   return flags.filter((f) => f.status === "open");

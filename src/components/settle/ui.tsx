@@ -1,8 +1,19 @@
 import { Link } from "@tanstack/react-router";
 import { Check, Copy, X } from "lucide-react";
 import type { ButtonHTMLAttributes, ReactNode } from "react";
+import { useEffect, useState } from "react";
 import { useSettle } from "@/lib/settle/store";
 import type { Confidence, Flag } from "@/lib/settle/types";
+
+export const DESIGN_NOTE_URL = "https://app.notion.com/p/4013d01bf9e781f68bb0f5e1ba6ffdfd";
+
+export function DesignLink({ className = "" }: { className?: string }) {
+  return (
+    <a href={DESIGN_NOTE_URL} target="_blank" rel="noreferrer" className={`text-[13px] font-medium text-accent underline ${className}`}>
+      How I designed this
+    </a>
+  );
+}
 
 export function PillButton({
   children,
@@ -93,28 +104,41 @@ export function Toasts() {
   const toasts = useSettle((s) => s.toasts);
   const undo = useSettle((s) => s.undo);
   const dismiss = useSettle((s) => s.dismissToast);
-  if (!toasts.length) return null;
+  const latest = toasts[toasts.length - 1];
+  const [announce, setAnnounce] = useState("");
+  useEffect(() => {
+    if (!latest) return;
+    setAnnounce("");
+    const id = window.setTimeout(() => setAnnounce(latest.text), 30);
+    return () => window.clearTimeout(id);
+  }, [latest]);
   return (
-    <div className="pointer-events-none fixed inset-x-0 bottom-24 z-50 flex flex-col items-center gap-2 px-4 md:bottom-6 md:items-start md:px-8">
-      {toasts.map((t) => (
-        <div
-          key={t.id}
-          role="status"
-          className="pointer-events-auto flex max-w-md items-center gap-3 rounded-full border border-line bg-surface px-4 py-2 shadow-[var(--shadow-2)]"
-        >
-          <Check className="size-4 text-success" aria-hidden />
-          <span className="text-sm">{t.text}</span>
-          {t.undo && (
-            <button className="text-sm font-medium text-accent" onClick={() => undo()}>
-              Undo
-            </button>
-          )}
-          <button aria-label="Dismiss" onClick={() => dismiss(t.id)} className="text-ink-2">
-            <X className="size-4" />
-          </button>
+    <>
+      <div className="sr-only" aria-live="polite" aria-atomic="true">
+        {announce}
+      </div>
+      {toasts.length > 0 && (
+        <div className="pointer-events-none fixed bottom-24 left-0 right-0 z-50 flex flex-col items-center gap-2 px-4 lg:bottom-6 lg:left-[264px] lg:right-8 lg:items-start lg:px-6">
+          {toasts.map((t) => (
+            <div
+              key={t.id}
+              className="pointer-events-auto flex max-w-md items-center gap-3 rounded-full border border-line bg-surface px-4 py-2 shadow-[var(--shadow-2)]"
+            >
+              <Check className="size-4 text-success" aria-hidden />
+              <span className="text-sm">{t.text}</span>
+              {t.undo && (
+                <button className="text-sm font-medium text-accent" onClick={() => undo()}>
+                  Undo
+                </button>
+              )}
+              <button aria-label="Dismiss" onClick={() => dismiss(t.id)} className="text-ink-2">
+                <X className="size-4" />
+              </button>
+            </div>
+          ))}
         </div>
-      ))}
-    </div>
+      )}
+    </>
   );
 }
 

@@ -10,13 +10,21 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as SplatRouteImport } from './routes/$'
 import { Route as AppIndexRouteImport } from './routes/app/index'
+import { Route as AppPeriodRouteRouteImport } from './routes/app/$period/route'
 import { Route as AppClientsRouteImport } from './routes/app/clients'
 import { Route as AppHelpRouteImport } from './routes/app/help'
 import { Route as AppSettingsRouteImport } from './routes/app/settings'
 import { Route as AppStartRouteImport } from './routes/app/start'
 import { Route as AppVendorsRouteImport } from './routes/app/vendors'
+import { Route as AppPeriodIndexRouteImport } from './routes/app/$period/index'
+import { Route as AppPeriodApproveRouteImport } from './routes/app/$period/approve'
+import { Route as AppPeriodBankRouteImport } from './routes/app/$period/bank'
+import { Route as AppPeriodExportRouteImport } from './routes/app/$period/export'
+import { Route as AppPeriodMatchRouteImport } from './routes/app/$period/match'
+import { Route as AppPeriodMatchedRouteImport } from './routes/app/$period/matched'
+import { Route as AppPeriodReviewRouteImport } from './routes/app/$period/review'
+import { Route as AppPeriodUploadRouteImport } from './routes/app/$period/upload'
 import { Route as App202609ApproveRouteImport } from './routes/app/2026-09/approve'
 import { Route as App202609BankRouteImport } from './routes/app/2026-09/bank'
 import { Route as App202609ExportRouteImport } from './routes/app/2026-09/export'
@@ -32,14 +40,14 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const SplatRoute = SplatRouteImport.update({
-  id: '/$',
-  path: '/$',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AppIndexRoute = AppIndexRouteImport.update({
   id: '/app/',
   path: '/app/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppPeriodRouteRoute = AppPeriodRouteRouteImport.update({
+  id: '/app/$period',
+  path: '/app/$period',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AppClientsRoute = AppClientsRouteImport.update({
@@ -66,6 +74,46 @@ const AppVendorsRoute = AppVendorsRouteImport.update({
   id: '/app/vendors',
   path: '/app/vendors',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AppPeriodIndexRoute = AppPeriodIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppPeriodRouteRoute,
+} as any)
+const AppPeriodApproveRoute = AppPeriodApproveRouteImport.update({
+  id: '/approve',
+  path: '/approve',
+  getParentRoute: () => AppPeriodRouteRoute,
+} as any)
+const AppPeriodBankRoute = AppPeriodBankRouteImport.update({
+  id: '/bank',
+  path: '/bank',
+  getParentRoute: () => AppPeriodRouteRoute,
+} as any)
+const AppPeriodExportRoute = AppPeriodExportRouteImport.update({
+  id: '/export',
+  path: '/export',
+  getParentRoute: () => AppPeriodRouteRoute,
+} as any)
+const AppPeriodMatchRoute = AppPeriodMatchRouteImport.update({
+  id: '/match',
+  path: '/match',
+  getParentRoute: () => AppPeriodRouteRoute,
+} as any)
+const AppPeriodMatchedRoute = AppPeriodMatchedRouteImport.update({
+  id: '/matched',
+  path: '/matched',
+  getParentRoute: () => AppPeriodRouteRoute,
+} as any)
+const AppPeriodReviewRoute = AppPeriodReviewRouteImport.update({
+  id: '/review',
+  path: '/review',
+  getParentRoute: () => AppPeriodRouteRoute,
+} as any)
+const AppPeriodUploadRoute = AppPeriodUploadRouteImport.update({
+  id: '/upload',
+  path: '/upload',
+  getParentRoute: () => AppPeriodRouteRoute,
 } as any)
 const App202609ApproveRoute = App202609ApproveRouteImport.update({
   id: '/app/2026-09/approve',
@@ -115,13 +163,20 @@ const App202609ReviewFlagIdRoute = App202609ReviewFlagIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/$': typeof SplatRoute
+  '/app/$period': typeof AppPeriodRouteRouteWithChildren
   '/app/clients': typeof AppClientsRoute
   '/app/help': typeof AppHelpRoute
   '/app/settings': typeof AppSettingsRoute
   '/app/start': typeof AppStartRoute
   '/app/vendors': typeof AppVendorsRouteWithChildren
   '/app/': typeof AppIndexRoute
+  '/app/$period/approve': typeof AppPeriodApproveRoute
+  '/app/$period/bank': typeof AppPeriodBankRoute
+  '/app/$period/export': typeof AppPeriodExportRoute
+  '/app/$period/match': typeof AppPeriodMatchRoute
+  '/app/$period/matched': typeof AppPeriodMatchedRoute
+  '/app/$period/review': typeof AppPeriodReviewRoute
+  '/app/$period/upload': typeof AppPeriodUploadRoute
   '/app/2026-09/approve': typeof App202609ApproveRoute
   '/app/2026-09/bank': typeof App202609BankRoute
   '/app/2026-09/export': typeof App202609ExportRoute
@@ -130,17 +185,24 @@ export interface FileRoutesByFullPath {
   '/app/2026-09/review': typeof App202609ReviewRouteWithChildren
   '/app/2026-09/upload': typeof App202609UploadRoute
   '/app/vendors/$gstin': typeof AppVendorsGstinRoute
+  '/app/$period/': typeof AppPeriodIndexRoute
   '/app/2026-09/review/$flagId': typeof App202609ReviewFlagIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/$': typeof SplatRoute
   '/app/clients': typeof AppClientsRoute
   '/app/help': typeof AppHelpRoute
   '/app/settings': typeof AppSettingsRoute
   '/app/start': typeof AppStartRoute
   '/app/vendors': typeof AppVendorsRouteWithChildren
   '/app': typeof AppIndexRoute
+  '/app/$period/approve': typeof AppPeriodApproveRoute
+  '/app/$period/bank': typeof AppPeriodBankRoute
+  '/app/$period/export': typeof AppPeriodExportRoute
+  '/app/$period/match': typeof AppPeriodMatchRoute
+  '/app/$period/matched': typeof AppPeriodMatchedRoute
+  '/app/$period/review': typeof AppPeriodReviewRoute
+  '/app/$period/upload': typeof AppPeriodUploadRoute
   '/app/2026-09/approve': typeof App202609ApproveRoute
   '/app/2026-09/bank': typeof App202609BankRoute
   '/app/2026-09/export': typeof App202609ExportRoute
@@ -149,18 +211,26 @@ export interface FileRoutesByTo {
   '/app/2026-09/review': typeof App202609ReviewRouteWithChildren
   '/app/2026-09/upload': typeof App202609UploadRoute
   '/app/vendors/$gstin': typeof AppVendorsGstinRoute
+  '/app/$period': typeof AppPeriodIndexRoute
   '/app/2026-09/review/$flagId': typeof App202609ReviewFlagIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/$': typeof SplatRoute
+  '/app/$period': typeof AppPeriodRouteRouteWithChildren
   '/app/clients': typeof AppClientsRoute
   '/app/help': typeof AppHelpRoute
   '/app/settings': typeof AppSettingsRoute
   '/app/start': typeof AppStartRoute
   '/app/vendors': typeof AppVendorsRouteWithChildren
   '/app/': typeof AppIndexRoute
+  '/app/$period/approve': typeof AppPeriodApproveRoute
+  '/app/$period/bank': typeof AppPeriodBankRoute
+  '/app/$period/export': typeof AppPeriodExportRoute
+  '/app/$period/match': typeof AppPeriodMatchRoute
+  '/app/$period/matched': typeof AppPeriodMatchedRoute
+  '/app/$period/review': typeof AppPeriodReviewRoute
+  '/app/$period/upload': typeof AppPeriodUploadRoute
   '/app/2026-09/approve': typeof App202609ApproveRoute
   '/app/2026-09/bank': typeof App202609BankRoute
   '/app/2026-09/export': typeof App202609ExportRoute
@@ -169,19 +239,27 @@ export interface FileRoutesById {
   '/app/2026-09/review': typeof App202609ReviewRouteWithChildren
   '/app/2026-09/upload': typeof App202609UploadRoute
   '/app/vendors/$gstin': typeof AppVendorsGstinRoute
+  '/app/$period/': typeof AppPeriodIndexRoute
   '/app/2026-09/review/$flagId': typeof App202609ReviewFlagIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/$'
+    | '/app/$period'
     | '/app/clients'
     | '/app/help'
     | '/app/settings'
     | '/app/start'
     | '/app/vendors'
     | '/app/'
+    | '/app/$period/approve'
+    | '/app/$period/bank'
+    | '/app/$period/export'
+    | '/app/$period/match'
+    | '/app/$period/matched'
+    | '/app/$period/review'
+    | '/app/$period/upload'
     | '/app/2026-09/approve'
     | '/app/2026-09/bank'
     | '/app/2026-09/export'
@@ -190,17 +268,24 @@ export interface FileRouteTypes {
     | '/app/2026-09/review'
     | '/app/2026-09/upload'
     | '/app/vendors/$gstin'
+    | '/app/$period/'
     | '/app/2026-09/review/$flagId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/$'
     | '/app/clients'
     | '/app/help'
     | '/app/settings'
     | '/app/start'
     | '/app/vendors'
     | '/app'
+    | '/app/$period/approve'
+    | '/app/$period/bank'
+    | '/app/$period/export'
+    | '/app/$period/match'
+    | '/app/$period/matched'
+    | '/app/$period/review'
+    | '/app/$period/upload'
     | '/app/2026-09/approve'
     | '/app/2026-09/bank'
     | '/app/2026-09/export'
@@ -209,17 +294,25 @@ export interface FileRouteTypes {
     | '/app/2026-09/review'
     | '/app/2026-09/upload'
     | '/app/vendors/$gstin'
+    | '/app/$period'
     | '/app/2026-09/review/$flagId'
   id:
     | '__root__'
     | '/'
-    | '/$'
+    | '/app/$period'
     | '/app/clients'
     | '/app/help'
     | '/app/settings'
     | '/app/start'
     | '/app/vendors'
     | '/app/'
+    | '/app/$period/approve'
+    | '/app/$period/bank'
+    | '/app/$period/export'
+    | '/app/$period/match'
+    | '/app/$period/matched'
+    | '/app/$period/review'
+    | '/app/$period/upload'
     | '/app/2026-09/approve'
     | '/app/2026-09/bank'
     | '/app/2026-09/export'
@@ -228,12 +321,13 @@ export interface FileRouteTypes {
     | '/app/2026-09/review'
     | '/app/2026-09/upload'
     | '/app/vendors/$gstin'
+    | '/app/$period/'
     | '/app/2026-09/review/$flagId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  SplatRoute: typeof SplatRoute
+  AppPeriodRouteRoute: typeof AppPeriodRouteRouteWithChildren
   AppClientsRoute: typeof AppClientsRoute
   AppHelpRoute: typeof AppHelpRoute
   AppSettingsRoute: typeof AppSettingsRoute
@@ -258,18 +352,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/$': {
-      id: '/$'
-      path: '/$'
-      fullPath: '/$'
-      preLoaderRoute: typeof SplatRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/app/': {
       id: '/app/'
       path: '/app'
       fullPath: '/app/'
       preLoaderRoute: typeof AppIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/app/$period': {
+      id: '/app/$period'
+      path: '/app/$period'
+      fullPath: '/app/$period'
+      preLoaderRoute: typeof AppPeriodRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/app/clients': {
@@ -306,6 +400,62 @@ declare module '@tanstack/react-router' {
       fullPath: '/app/vendors'
       preLoaderRoute: typeof AppVendorsRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/app/$period/': {
+      id: '/app/$period/'
+      path: '/'
+      fullPath: '/app/$period/'
+      preLoaderRoute: typeof AppPeriodIndexRouteImport
+      parentRoute: typeof AppPeriodRouteRoute
+    }
+    '/app/$period/approve': {
+      id: '/app/$period/approve'
+      path: '/approve'
+      fullPath: '/app/$period/approve'
+      preLoaderRoute: typeof AppPeriodApproveRouteImport
+      parentRoute: typeof AppPeriodRouteRoute
+    }
+    '/app/$period/bank': {
+      id: '/app/$period/bank'
+      path: '/bank'
+      fullPath: '/app/$period/bank'
+      preLoaderRoute: typeof AppPeriodBankRouteImport
+      parentRoute: typeof AppPeriodRouteRoute
+    }
+    '/app/$period/export': {
+      id: '/app/$period/export'
+      path: '/export'
+      fullPath: '/app/$period/export'
+      preLoaderRoute: typeof AppPeriodExportRouteImport
+      parentRoute: typeof AppPeriodRouteRoute
+    }
+    '/app/$period/match': {
+      id: '/app/$period/match'
+      path: '/match'
+      fullPath: '/app/$period/match'
+      preLoaderRoute: typeof AppPeriodMatchRouteImport
+      parentRoute: typeof AppPeriodRouteRoute
+    }
+    '/app/$period/matched': {
+      id: '/app/$period/matched'
+      path: '/matched'
+      fullPath: '/app/$period/matched'
+      preLoaderRoute: typeof AppPeriodMatchedRouteImport
+      parentRoute: typeof AppPeriodRouteRoute
+    }
+    '/app/$period/review': {
+      id: '/app/$period/review'
+      path: '/review'
+      fullPath: '/app/$period/review'
+      preLoaderRoute: typeof AppPeriodReviewRouteImport
+      parentRoute: typeof AppPeriodRouteRoute
+    }
+    '/app/$period/upload': {
+      id: '/app/$period/upload'
+      path: '/upload'
+      fullPath: '/app/$period/upload'
+      preLoaderRoute: typeof AppPeriodUploadRouteImport
+      parentRoute: typeof AppPeriodRouteRoute
     }
     '/app/2026-09/approve': {
       id: '/app/2026-09/approve'
@@ -373,6 +523,32 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AppPeriodRouteRouteChildren {
+  AppPeriodApproveRoute: typeof AppPeriodApproveRoute
+  AppPeriodBankRoute: typeof AppPeriodBankRoute
+  AppPeriodExportRoute: typeof AppPeriodExportRoute
+  AppPeriodMatchRoute: typeof AppPeriodMatchRoute
+  AppPeriodMatchedRoute: typeof AppPeriodMatchedRoute
+  AppPeriodReviewRoute: typeof AppPeriodReviewRoute
+  AppPeriodUploadRoute: typeof AppPeriodUploadRoute
+  AppPeriodIndexRoute: typeof AppPeriodIndexRoute
+}
+
+const AppPeriodRouteRouteChildren: AppPeriodRouteRouteChildren = {
+  AppPeriodApproveRoute: AppPeriodApproveRoute,
+  AppPeriodBankRoute: AppPeriodBankRoute,
+  AppPeriodExportRoute: AppPeriodExportRoute,
+  AppPeriodMatchRoute: AppPeriodMatchRoute,
+  AppPeriodMatchedRoute: AppPeriodMatchedRoute,
+  AppPeriodReviewRoute: AppPeriodReviewRoute,
+  AppPeriodUploadRoute: AppPeriodUploadRoute,
+  AppPeriodIndexRoute: AppPeriodIndexRoute,
+}
+
+const AppPeriodRouteRouteWithChildren = AppPeriodRouteRoute._addFileChildren(
+  AppPeriodRouteRouteChildren,
+)
+
 interface AppVendorsRouteChildren {
   AppVendorsGstinRoute: typeof AppVendorsGstinRoute
 }
@@ -399,7 +575,7 @@ const App202609ReviewRouteWithChildren = App202609ReviewRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  SplatRoute: SplatRoute,
+  AppPeriodRouteRoute: AppPeriodRouteRouteWithChildren,
   AppClientsRoute: AppClientsRoute,
   AppHelpRoute: AppHelpRoute,
   AppSettingsRoute: AppSettingsRoute,

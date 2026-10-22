@@ -5,7 +5,7 @@ import { itcSummary } from "@/components/settle/summary";
 import { PillButton } from "@/components/settle/ui";
 import { FLAG_LABEL } from "@/lib/settle/engine";
 import { formatDate, formatInr, periodLabel } from "@/lib/settle/format";
-import { countsByType, useSettle } from "@/lib/settle/store";
+import { countsByType, booksLoaded, useSettle } from "@/lib/settle/store";
 
 export const Route = createFileRoute("/app/2026-09/approve")({ component: Approve });
 
@@ -22,6 +22,7 @@ function Approve() {
   const [open, setOpen] = useState(false);
   const [checked, setChecked] = useState(false);
   const totals = useMemo(() => itcSummary(flags, matches, invoices, twoB), [flags, matches, invoices, twoB]);
+  const hasBooks = booksLoaded(invoices, twoB);
   const counts = countsByType(flags);
   const openCount = flags.filter((f) => f.status === "open").length;
   const highOpen = flags.filter((f) => f.status === "open" && f.level === "high").length;
@@ -40,6 +41,9 @@ function Approve() {
           </button>
         </p>
       )}
+      {!hasBooks && <p className="mt-4 max-w-xl text-ink-2">No bills in this workspace. Approve stays off until a month has books to close.</p>}
+      {hasBooks && (
+        <>
       <div className="mt-6 grid gap-3 sm:grid-cols-3">
         <Tile label="Claimable" value={formatInr(totals.claimable)} />
         <Tile label="At risk" value={formatInr(totals.atRisk)} />
@@ -53,6 +57,8 @@ function Approve() {
         </div>
       </div>
       <p className="mt-2 text-[13px] text-ink-2">Green can be claimed. Red is still open. Amber is with a vendor.</p>
+        </>
+      )}
       <ul className="mt-6 divide-y divide-line rounded-2xl border border-line bg-surface">
         {Object.entries(counts).map(([k, n]) => (
           <li key={k} className="flex items-center justify-between px-4 py-3 text-sm">
@@ -63,7 +69,7 @@ function Approve() {
       </ul>
       <div className="mt-6 flex flex-wrap gap-3">
         {status !== "approved" ? (
-          <PillButton disabled={highOpen > 0} onClick={() => setOpen(true)}>
+          <PillButton disabled={!hasBooks || highOpen > 0} onClick={() => setOpen(true)}>
             {approveLabel}
           </PillButton>
         ) : (

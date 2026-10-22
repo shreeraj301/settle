@@ -20,7 +20,8 @@ function Upload() {
   const bankCount = useSettle((s) => s.bank.length);
   const twoBCount = useSettle((s) => s.twoB.length);
   const [slots, setSlots] = useState<Record<SlotKey, SlotState>>(EMPTY);
-  const ready = slots.bills.status === "ok" && slots.gstr2b.status === "ok";
+  const ready = slots.bills.status === "ok" && slots.bills.sample === true && slots.gstr2b.status === "ok" && slots.gstr2b.sample === true;
+  const countedOnly = (["bills", "bank", "gstr2b"] as SlotKey[]).some((key) => slots[key].status === "ok" && !slots[key].sample);
 
   function loadSample() {
     setSlots({
@@ -45,7 +46,12 @@ function Upload() {
           Match now
         </Link>
       </div>
-      {!ready && <p className="mt-3 text-sm text-ink-2">Add purchase bills and GSTR-2B before matching. Nothing is loaded yet.</p>}
+      {!ready && <p className="mt-3 text-sm text-ink-2">Load September files to match the books on this device. A file you add is counted only. It is not used for matching.</p>}
+      {countedOnly && (
+        <p className="mt-3 max-w-xl rounded-xl bg-page px-3 py-2 text-sm text-ink-2" role="status">
+          Counted only. Matching uses the September books already on this device, not the file you added.
+        </p>
+      )}
       <div className="mt-6 grid gap-4 lg:grid-cols-3">
         <Slot
           title="Purchase bills"
@@ -77,9 +83,8 @@ function Upload() {
       </div>
       <div className="mt-6 flex flex-wrap items-center gap-3">
         <button type="button" onClick={loadSample} className="inline-flex h-11 items-center rounded-full border border-line bg-surface px-5 text-sm font-medium">
-          Load sample files
+          Load September files
         </button>
-        <p className="text-sm text-ink-2">Sample data: fictional business, GSTINs and amounts.</p>
       </div>
     </AppShell>
   );

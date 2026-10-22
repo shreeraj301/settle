@@ -52,7 +52,9 @@ function MatchPage() {
         <div>
           <h1 className="settle-h2">Matching September</h1>
           <p className="mt-1 text-ink-2" aria-live="polite">
-            {done ? `${flags.length} flags to review. ${matches.length} bills already agree.` : STAGES[Math.min(stage, STAGES.length - 1)]}
+            {done
+              ? `${flags.length} flags to review. ${matches.length} bills already agree. Claimable ${formatInr(totals.claimable)}. At risk ${formatInr(totals.atRisk)}.`
+              : STAGES[Math.min(stage, STAGES.length - 1)]}
           </p>
         </div>
         <button
@@ -89,11 +91,12 @@ function MatchPage() {
       </svg>
 
       <div className="mt-6 grid gap-3 sm:grid-cols-3">
-        <Tile label="Claimable if flags clear" value={formatInr(totals.claimable)} />
-        <Tile label="At risk" value={formatInr(totals.atRisk)} />
-        <Tile label="Matched pairs" value={String(matches.length)} />
+        <Tile label="Claimable if flags clear" value={done ? formatInr(totals.claimable) : "After the match"} />
+        <Tile label="At risk" value={done ? formatInr(totals.atRisk) : "After the match"} />
+        <Tile label="Matched pairs" value={done ? String(matches.length) : "After the match"} />
       </div>
-      <p className="mt-4 text-sm text-ink-2">
+      <p className="mt-4 text-sm text-ink-2">Pairs come from the books loaded for this workspace. A file counted on Upload is not parsed into this match.</p>
+      <p className="mt-2 text-sm text-ink-2">
         Want the row list? <Link to="/app/2026-09/matched" className="text-accent">Open matched bills</Link>
       </p>
     </AppShell>

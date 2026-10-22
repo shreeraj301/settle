@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AppShell } from "@/components/settle/shell";
+import { DesignLink } from "@/components/settle/ui";
 
 export const Route = createFileRoute("/app/help")({ component: Help });
 
@@ -40,6 +41,9 @@ function Help() {
           </li>
         ))}
       </ul>
+      <p className="mt-8">
+        <DesignLink />
+      </p>
     </AppShell>
   );
 }

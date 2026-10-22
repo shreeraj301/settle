@@ -4,6 +4,7 @@ import { buildWorkspace } from "@/lib/settle/dataset";
 import { FLAG_LABEL, runMatch } from "@/lib/settle/engine";
 import { formatInr, periodLabel } from "@/lib/settle/format";
 import { itcSummary } from "@/components/settle/summary";
+import { DesignLink } from "@/components/settle/ui";
 
 export const Route = createFileRoute("/")({ component: Landing });
 
@@ -41,7 +42,6 @@ function Landing() {
             </Link>
           </div>
           <p className="mt-12 border-t border-line pt-8 text-ink-2">Upload, match, review, approve, export.</p>
-          <p className="mt-3 text-sm font-medium text-ink">Sample data: fictional business, GSTINs and amounts</p>
           <p className="mt-3 max-w-lg text-sm text-ink-2">Correct, add from 2B, ask the vendor, or ignore with a reason.</p>
         </div>
 
@@ -77,6 +77,9 @@ function Landing() {
           </Link>
         </section>
       </main>
+      <footer className="mx-auto max-w-6xl px-5 pb-10">
+        <DesignLink />
+      </footer>
     </div>
   );
 }

@@ -205,3 +205,8 @@
   background: var(--color-line);
   border-radius: 999px;
 }
+@media (pointer: coarse) {
+  .kbd-hint {
+    display: none;
+  }
+}

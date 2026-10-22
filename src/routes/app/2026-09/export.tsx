@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { AppShell } from "@/components/settle/shell";
 import { itcSummary } from "@/components/settle/summary";
-import { FLAG_LABEL } from "@/lib/settle/engine";
+import { flagExportRows, flagsToCsv, flagsToXlsx } from "@/lib/settle/export-file";
 import { formatDate, formatInr } from "@/lib/settle/format";
 import { useSettle } from "@/lib/settle/store";
 
@@ -30,15 +30,8 @@ function ExportPage() {
     );
   }
 
-  function download(format: "csv" | "json") {
-    const rows = flags.map((f) => ({
-      type: FLAG_LABEL[f.type],
-      status: f.status,
-      confidence: f.level,
-      reason: f.reason,
-      itc: (f.itcImpact / 100).toFixed(2),
-      invoice: invoices.find((i) => i.id === f.invoiceId)?.invoiceNo ?? "",
-    }));
+  function download(format: "csv" | "json" | "xlsx") {
+    const rows = flagExportRows(flags, invoices);
     const summary = {
       business,
       period: "09-2026",
@@ -47,12 +40,18 @@ function ExportPage() {
       followUp: (totals.follow / 100).toFixed(2),
       rows,
     };
-    const name = `Settle_ShreeGaneshTraders_09-2026.${format === "csv" ? "csv" : "json"}`;
+    const ext = format === "json" ? "json" : format;
+    const name = `Settle_ShreeGaneshTraders_09-2026.${ext}`;
     const body =
+      format === "json" ? JSON.stringify(summary, null, 2) : format === "csv" ? flagsToCsv(rows) : flagsToXlsx(rows);
+    const type =
       format === "json"
-        ? JSON.stringify(summary, null, 2)
-        : ["type,status,confidence,reason,itc,invoice", ...rows.map((r) => [r.type, r.status, r.confidence, `"${r.reason.replaceAll('"', "'")}"`, r.itc, r.invoice].join(","))].join("\n");
-    const blob = new Blob([body], { type: format === "json" ? "application/json" : "text/csv" });
+        ? "application/json"
+        : format === "csv"
+          ? "text/csv"
+          : "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+    const payload: BlobPart = typeof body === "string" ? body : new Uint8Array(body).buffer;
+    const blob = new Blob([payload], { type });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -62,20 +61,16 @@ function ExportPage() {
     setHistory((h) => [`${name} · ${formatDate(new Date().toISOString().slice(0, 10))}`, ...h]);
   }
 
-  function downloadPrintable(kind: "pdf" | "xlsx") {
-    const name = `Settle_ShreeGaneshTraders_09-2026.${kind === "pdf" ? "html" : "csv"}`;
-    const html = `<!doctype html><meta charset="utf-8"><title>${business} 09-2026</title><body style="font-family:Georgia,serif;padding:32px"><h1>${business}</h1><p>September 2026 input tax credit</p><p>Claimable ${formatInr(totals.claimable)}</p><p>At risk ${formatInr(totals.atRisk)}</p><p>Follow-up ${formatInr(totals.follow)}</p><table border="1" cellpadding="6">${flags
-      .map((f) => `<tr><td>${FLAG_LABEL[f.type]}</td><td>${f.status}</td><td>${formatInr(f.itcImpact)}</td><td>${f.reason}</td></tr>`)
+  function downloadPrintable() {
+    const rows = flagExportRows(flags, invoices);
+    const name = "Settle_ShreeGaneshTraders_09-2026.html";
+    const html = `<!doctype html><meta charset="utf-8"><title>${business} 09-2026</title><body style="font-family:Georgia,serif;padding:32px"><h1>${business}</h1><p>September 2026 input tax credit</p><p>Claimable ${formatInr(totals.claimable)}</p><p>At risk ${formatInr(totals.atRisk)}</p><p>Follow-up ${formatInr(totals.follow)}</p><table border="1" cellpadding="6"><tr><th>Type</th><th>Status</th><th>Reason</th><th>ITC</th><th>Explanation</th></tr>${rows
+      .map((r) => `<tr><td>${r.type}</td><td>${r.status}</td><td>${r.Reason}</td><td>${r.itc}</td><td>${r.explanation}</td></tr>`)
       .join("")}</table><p>Print this page and choose Save as PDF.</p></body>`;
-    if (kind === "pdf") {
-      const w = window.open("", "_blank");
-      if (w) {
-        w.document.write(html);
-        w.document.close();
-      }
-    } else {
-      download("csv");
-      return;
+    const w = window.open("", "_blank");
+    if (w) {
+      w.document.write(html);
+      w.document.close();
     }
     setHistory((h) => [`${name} · ready to print`, ...h]);
   }
@@ -90,8 +85,8 @@ function ExportPage() {
         {(
           [
             ["csv", "CSV", () => download("csv")],
-            ["xlsx", "Spreadsheet", () => downloadPrintable("xlsx")],
-            ["pdf", "Print summary", () => downloadPrintable("pdf")],
+            ["xlsx", "Spreadsheet", () => download("xlsx")],
+            ["pdf", "Print summary", () => downloadPrintable()],
             ["json", "JSON", () => download("json")],
           ] as const
         ).map(([id, label, fn]) => (

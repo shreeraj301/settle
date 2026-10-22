@@ -1,11 +1,21 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useEffect } from "react";
+import { septemberSaved, useSettle } from "@/lib/settle/store";
 
 export function NotFoundPage() {
   const navigate = useNavigate();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const searchStr = useRouterState({ select: (s) => s.location.searchStr });
   const asked = `${pathname}${searchStr}`;
+  const saved = useSettle((s) =>
+    septemberSaved({
+      hydrated: s.hydrated,
+      touched: s.touched,
+      period: s.period,
+      invoices: s.invoices,
+      periodSnapshots: s.periodSnapshots,
+    }),
+  );
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -24,9 +34,13 @@ export function NotFoundPage() {
 
   return (
     <main className="min-h-screen bg-page px-5 py-10 text-ink">
+      <title>This page isn't in the books · Settle</title>
+      <meta name="robots" content="noindex" />
       <article className="mx-auto max-w-3xl rounded-2xl border border-line bg-surface p-5 shadow-[var(--shadow-1)] lg:p-8">
         <h1 className="settle-h1">This page isn't in the books.</h1>
-        <p className="mt-4 max-w-xl text-base">Nothing is lost. Your September work is saved on this device.</p>
+        <p className="mt-4 max-w-xl text-base">
+          Nothing is lost.{saved ? " Your September work is saved on this device." : ""}
+        </p>
         <div className="mt-6 flex flex-wrap items-center gap-2">
           <span className="inline-flex items-center rounded-full bg-[#F5F3EE] px-2 py-0.5 text-[13px] font-medium text-[#121826]">
             Note only
@@ -59,7 +73,7 @@ export function NotFoundPage() {
             Go home
           </Link>
         </div>
-        <p className="mt-3 text-[13px] text-ink-2">Press J or Enter to go back to review.</p>
+        <p className="kbd-hint mt-3 text-[13px] text-ink-2">Press J or Enter to go back to review.</p>
       </article>
     </main>
   );

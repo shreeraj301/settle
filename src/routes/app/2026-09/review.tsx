@@ -6,7 +6,7 @@ import { itcSummary } from "@/components/settle/summary";
 import { ConfidencePill, PillButton, SeverityPill } from "@/components/settle/ui";
 import { FLAG_LABEL, FLAG_ORDER } from "@/lib/settle/engine";
 import { formatInr } from "@/lib/settle/format";
-import { useSettle } from "@/lib/settle/store";
+import { booksLoaded, CLIENTS, useSettle } from "@/lib/settle/store";
 import type { Flag } from "@/lib/settle/types";
 
 export const Route = createFileRoute("/app/2026-09/review")({
@@ -31,6 +31,9 @@ function Review() {
   const followUp = useSettle((s) => s.followUp);
   const ignore = useSettle((s) => s.ignore);
   const acceptDate = useSettle((s) => s.acceptDate);
+  const mode = useSettle((s) => s.mode);
+  const clientId = useSettle((s) => s.clientId);
+  const setClient = useSettle((s) => s.setClient);
   const [filter, setFilter] = useState<string>(search.type || "open");
   const [active, setActive] = useState<string | null>(null);
   const [sheet, setSheet] = useState(false);
@@ -100,6 +103,7 @@ function Review() {
   }, [visible, active, fromPath, navigate, sheet]);
 
   const totals = itcSummary(flags, matches, invoices, twoB);
+  const hasBooks = booksLoaded(invoices, twoB);
   const openCount = flags.filter((f) => f.status === "open").length;
   const followCount = flags.filter((f) => f.status === "follow_up").length;
   const doneCount = flags.filter((f) => f.status === "fixed" || f.status === "ignored").length;
@@ -108,6 +112,18 @@ function Review() {
     const n = visible[idx + dir];
     if (n) openFlag(n.id, sheet);
   };
+
+  if (!hasBooks) {
+    return (
+      <AppShell step="review">
+        <section className="mx-auto max-w-xl rounded-2xl border border-line bg-surface p-8">
+          <h1 className="settle-h2">No bills in this workspace.</h1>
+          <p className="mt-3 text-ink-2">Nothing to match, so there is nothing to approve. Load a month that has books, or switch back to Shree Ganesh Traders.</p>
+          {mode === "ca" && <ClientStrip clientId={clientId} onPick={setClient} />}
+        </section>
+      </AppShell>
+    );
+  }
 
   if (openCount === 0 && filter === "open") {
     return (
@@ -133,9 +149,10 @@ function Review() {
           <p className="text-sm text-ink-2">
             {openCount} open · {followCount} with vendors · {formatInr(totals.atRisk)} at risk · {formatInr(totals.follow)} in follow-up
           </p>
-          <p className="mt-1 text-[13px] text-ink-2">J next flag. K previous.</p>
+          <p className="mt-1 text-[13px] text-ink-2 kbd-hint">J next flag. K previous.</p>
         </div>
       </div>
+      {mode === "ca" && <ClientStrip clientId={clientId} onPick={setClient} />}
       <div className="mt-4 flex max-w-full flex-wrap gap-2">
         <Filter label="Open" count={openCount} on={filter === "open"} onClick={() => setFilter("open")} />
         {FLAG_ORDER.map((t) => {
@@ -259,9 +276,18 @@ function Review() {
       )}
 
       {selected.length >= 1 && !locked && (
-        <div className="fixed inset-x-4 bottom-20 z-40 flex items-center justify-between gap-3 rounded-full border border-line bg-surface px-4 py-2 shadow-[var(--shadow-2)] lg:bottom-6 lg:left-[280px]">
+        <div className="fixed inset-x-4 bottom-20 z-40 flex flex-wrap items-end justify-between gap-3 rounded-2xl border border-line bg-surface px-4 py-3 shadow-[var(--shadow-2)] lg:bottom-6 lg:left-[280px]">
           <span className="text-sm">{selected.length} selected</span>
           <div className="flex gap-2">
+            <label className="text-[13px] text-ink-2">
+              Reason
+              <select aria-label="Bulk ignore reason" className="mt-1 block h-10 rounded-md border border-line bg-page px-2 text-sm" value={reason} onChange={(e) => setReason(e.target.value)}>
+                <option value="">Choose a reason</option>
+                {IGNORE.map((r) => (
+                  <option key={r}>{r}</option>
+                ))}
+              </select>
+            </label>
             <PillButton
               tone="secondary"
               onClick={() => {
@@ -273,12 +299,13 @@ function Review() {
             </PillButton>
             <PillButton
               tone="danger"
+              disabled={!reason}
               onClick={() => {
-                if (!reason) {
-                  setReason("Duplicate");
-                }
-                ignore(selected, reason || "Duplicate", note);
+                if (!reason) return;
+                ignore(selected, reason, note);
                 setSelected([]);
+                setReason("");
+                setNote("");
               }}
             >
               Ignore
@@ -295,6 +322,23 @@ function Review() {
         </div>
       )}
     </AppShell>
+  );
+}
+
+function ClientStrip({ clientId, onPick }: { clientId: string; onPick: (id: string) => void }) {
+  return (
+    <div className="mt-4 flex flex-wrap gap-2">
+      {CLIENTS.map((c) => (
+        <button
+          key={c.id}
+          type="button"
+          onClick={() => onPick(c.id)}
+          className={`h-10 rounded-full border px-3 text-sm ${clientId === c.id ? "border-accent bg-accent-tint text-accent" : "border-line bg-surface"}`}
+        >
+          {c.name}
+        </button>
+      ))}
+    </div>
   );
 }
 

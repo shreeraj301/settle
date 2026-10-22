@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AppShell } from "@/components/settle/shell";
+import { groupBankLines } from "@/lib/settle/bank-view";
 import { formatDate, formatInr } from "@/lib/settle/format";
 import { useSettle } from "@/lib/settle/store";
 
@@ -20,16 +21,15 @@ function BankPage() {
   const bank = useSettle((s) => s.bank);
   const matches = useSettle((s) => s.matches);
   const flags = useSettle((s) => s.flags);
-  const linked = new Set([...matches.flatMap((m) => m.bankTxnIds), ...flags.flatMap((f) => f.bankTxnIds)]);
-  const groups = [
-    { title: "Linked to a bill", rows: bank.filter((b) => linked.has(b.id) && b.kind === "supplier_payment") },
-    { title: "Not linked yet", rows: bank.filter((b) => !linked.has(b.id) && b.kind === "supplier_payment") },
-    { title: "Other bank lines", rows: bank.filter((b) => b.kind !== "supplier_payment") },
-  ];
+  const groups = groupBankLines(bank, matches, flags);
   return (
     <AppShell>
       <h1 className="settle-h2">Bank lines</h1>
-      <p className="mt-1 text-sm text-ink-2">{bank.length} lines this month, including receipts, charges and the GST challan.</p>
+      {bank.length === 0 ? (
+        <p className="mt-3 max-w-xl text-ink-2">No bank lines in this workspace.</p>
+      ) : (
+        <>
+      <p className="mt-1 text-sm text-ink-2">{bank.length} lines this month, sorted by date. A second payment of the same bill is listed once, under Possible duplicate.</p>
       <div className="mt-5 space-y-6">
         {groups.map((g) => (
           <section key={g.title}>
@@ -48,6 +48,8 @@ function BankPage() {
           </section>
         ))}
       </div>
+        </>
+      )}
     </AppShell>
   );
 }

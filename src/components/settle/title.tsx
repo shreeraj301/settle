@@ -1,5 +1,6 @@
 import { useRouterState } from "@tanstack/react-router";
 import { useEffect } from "react";
+import { periodLabel } from "@/lib/settle/format";
 import { useSettle } from "@/lib/settle/store";
 
 const TITLES: [RegExp, string][] = [
@@ -21,6 +22,19 @@ const TITLES: [RegExp, string][] = [
 ];
 
 export function pageTitle(pathname: string): string {
+  const other = pathname.match(/^\/app\/(\d{4}-\d{2})\/([a-z-]+)/);
+  if (other && other[1] !== "2026-09") {
+    const labels: Record<string, string> = {
+      upload: "Upload files",
+      match: "Match",
+      review: "Review flags",
+      matched: "Matched bills",
+      bank: "Bank lines",
+      approve: "Approve",
+      export: "Export",
+    };
+    return `${labels[other[2]] ?? "Month"} · ${periodLabel(other[1])} · Settle`;
+  }
   for (const [re, title] of TITLES) if (re.test(pathname)) return title;
   return "This page isn't in the books · Settle";
 }

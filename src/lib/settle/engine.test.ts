@@ -3,6 +3,8 @@ import test from "node:test";
 import { buildWorkspace } from "./dataset.ts";
 import { FLAG_ORDER, runMatch } from "./engine.ts";
 import { formatDate, formatInr, gstinChecksumOk, parseDate, toPaise } from "./format.ts";
+import { groupBankLines } from "./bank-view.ts";
+import { flagExportRows, flagsToCsv, flagsToXlsx } from "./export-file.ts";
 
 test("formatters", () => {
   assert.equal(formatInr(toPaise(123456)), "₹1,23,456.00");
@@ -37,4 +39,39 @@ test("demo workspace covers every flag type", () => {
   const cn = data.invoices.find((i) => i.invoiceNo === "AOD/CN-07");
   assert.ok(cn && cn.total < 0);
   assert.ok(data.bank.length >= 28);
+  const groups = groupBankLines(result.bank, result.matches, result.flags);
+  const seen = new Map<string, number>();
+  for (const group of groups) {
+    let prev = "";
+    for (const row of group.rows) {
+      assert.ok(row.date >= prev, `${group.title} not sorted`);
+      prev = row.date;
+      seen.set(row.id, (seen.get(row.id) ?? 0) + 1);
+    }
+  }
+  for (const row of result.bank) assert.equal(seen.get(row.id), 1, row.id);
+  const dupPayments = result.bank.filter((b) => b.debit === toPaise(6195));
+  assert.equal(dupPayments.length, 2);
+  const linked = groups.find((g) => g.title === "Linked to a bill")!;
+  const possible = groups.find((g) => g.title === "Possible duplicate")!;
+  const linkedDupes = dupPayments.filter((b) => linked.rows.some((r) => r.id === b.id));
+  const possibleDupes = dupPayments.filter((b) => possible.rows.some((r) => r.id === b.id));
+  assert.equal(linkedDupes.length, 1);
+  assert.equal(possibleDupes.length, 1);
+});
+
+test("export includes an ignore Reason column and a real xlsx", () => {
+  const data = buildWorkspace();
+  const result = runMatch({ invoices: data.invoices, twoB: data.twoB, bank: data.bank, period: "2026-09" });
+  const flags = result.flags.map((f, i) => (i === 0 ? { ...f, status: "ignored" as const, ignoreReason: "Duplicate" } : f));
+  const rows = flagExportRows(flags, result.invoices);
+  const csv = flagsToCsv(rows);
+  assert.match(csv, /^type,status,confidence,explanation,Reason,itc,invoice/);
+  assert.match(csv, /Duplicate/);
+  const xlsx = flagsToXlsx(rows);
+  assert.equal(xlsx[0], 0x50);
+  assert.equal(xlsx[1], 0x4b);
+  const text = new TextDecoder().decode(xlsx);
+  assert.match(text, /Reason/);
+  assert.match(text, /worksheet/);
 });

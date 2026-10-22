@@ -11,10 +11,10 @@ import {
   Users,
 } from "lucide-react";
 import type { ReactNode } from "react";
-import { useEffect } from "react";
+import { useEffect, useLayoutEffect } from "react";
 import { CLIENTS, openFlags, useSettle } from "@/lib/settle/store";
 import { periodLabel } from "@/lib/settle/format";
-import { Toasts } from "./ui";
+import { DesignLink, Toasts } from "./ui";
 
 const STEPS = [
   { id: "upload", label: "Upload" },
@@ -35,6 +35,12 @@ export function AppShell({ children, step }: { children: ReactNode; step?: strin
   const mode = useSettle((s) => s.mode);
   const undo = useSettle((s) => s.undo);
   const status = useSettle((s) => s.status);
+  const setPeriod = useSettle((s) => s.setPeriod);
+
+  useLayoutEffect(() => {
+    const match = path.match(/^\/app\/(\d{4}-\d{2})(?:\/|$)/);
+    if (match) setPeriod(match[1]);
+  }, [path, setPeriod]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -49,12 +55,11 @@ export function AppShell({ children, step }: { children: ReactNode; step?: strin
     return () => window.removeEventListener("keydown", onKey);
   }, [undo]);
 
-  const nav = [
-    { to: "/app/2026-09/review", label: "Review", icon: ListChecks, badge: open },
-    { to: "/app/2026-09/matched", label: "Matched bills", icon: CheckCircle2 },
-    { to: "/app/2026-09/bank", label: "Bank", icon: Landmark },
-    { to: "/app/vendors", label: "Vendors", icon: Users },
-    { to: "/app/2026-09/approve", label: "Approve", icon: Home },
+  const pages = [
+    { page: "review" as const, label: "Review", icon: ListChecks, badge: open },
+    { page: "matched" as const, label: "Matched bills", icon: CheckCircle2 },
+    { page: "bank" as const, label: "Bank", icon: Landmark },
+    { page: "approve" as const, label: "Approve", icon: Home },
   ];
 
   return (
@@ -85,16 +90,23 @@ export function AppShell({ children, step }: { children: ReactNode; step?: strin
             <div className="text-[13px] text-ink-2">
               {city} · {periodLabel(period)}
             </div>
-            <div className="mt-1 text-[13px] text-ink-2">{mode === "ca" ? "CA mode" : "Owner mode"}</div>
+            <div className="mt-1 text-[13px] text-ink-2">{mode === "ca" ? "CA mode. Clients first, then flags." : "Owner mode"}</div>
           </div>
           <nav className="flex flex-1 flex-col gap-1 overflow-y-auto">
-            {nav.map((item) => {
-              const active = path.startsWith(item.to);
+            {mode === "ca" && (
+              <Link to="/app/clients" className={`flex h-11 items-center gap-3 rounded-full px-3 text-sm ${path.startsWith("/app/clients") ? "bg-accent-tint text-accent" : "hover:bg-page"}`}>
+                <Building2 className="size-5" strokeWidth={1.5} /> Clients
+              </Link>
+            )}
+            {pages.map((item) => {
+              const href = `/app/${period}/${item.page}`;
+              const active = path.startsWith(href);
               const Icon = item.icon;
               return (
-                <Link
-                  key={item.to}
-                  to={item.to}
+                <PeriodLink
+                  key={item.page}
+                  period={period}
+                  page={item.page}
                   className={`flex h-11 items-center gap-3 rounded-full px-3 text-sm ${active ? "bg-accent-tint text-accent" : "hover:bg-page"}`}
                 >
                   <Icon className="size-5" strokeWidth={1.5} />
@@ -102,20 +114,26 @@ export function AppShell({ children, step }: { children: ReactNode; step?: strin
                   {item.badge ? (
                     <span className="rounded-full bg-danger-tint px-2 text-[13px] font-medium text-danger">{item.badge}</span>
                   ) : null}
-                </Link>
+                </PeriodLink>
               );
             })}
+            <Link to="/app/vendors" className={`flex h-11 items-center gap-3 rounded-full px-3 text-sm ${path.startsWith("/app/vendors") ? "bg-accent-tint text-accent" : "hover:bg-page"}`}>
+              <Users className="size-5" strokeWidth={1.5} /> Vendors
+            </Link>
           </nav>
           <div className="mt-auto flex flex-col gap-1">
-            <Link to="/app/clients" className="flex h-11 items-center gap-3 rounded-full px-3 text-sm hover:bg-page">
-              <Building2 className="size-5" strokeWidth={1.5} /> Clients
-            </Link>
+            {mode !== "ca" && (
+              <Link to="/app/clients" className="flex h-11 items-center gap-3 rounded-full px-3 text-sm hover:bg-page">
+                <Building2 className="size-5" strokeWidth={1.5} /> Clients
+              </Link>
+            )}
             <Link to="/app/settings" className="flex h-11 items-center gap-3 rounded-full px-3 text-sm hover:bg-page">
               <Settings className="size-5" strokeWidth={1.5} /> Settings
             </Link>
             <Link to="/app/help" className="flex h-11 items-center gap-3 rounded-full px-3 text-sm hover:bg-page">
               <CircleHelp className="size-5" strokeWidth={1.5} /> Help
             </Link>
+            <DesignLink className="px-3 py-2" />
           </div>
         </aside>
 
@@ -126,14 +144,19 @@ export function AppShell({ children, step }: { children: ReactNode; step?: strin
                 <div className="text-[13px] font-medium tracking-wide text-ink-2">
                   {business} · {periodLabel(period)}
                 </div>
-                <div className="text-[13px] text-ink-2">Sample data: fictional business, GSTINs and amounts</div>
                 <div className="text-sm">
-                  {status === "approved" ? "Approved. Read only until you reopen." : step ? `Step: ${step}` : "Books, 2B and bank"}
+                  {status === "approved"
+                    ? "Approved. Read only until you reopen."
+                    : mode === "ca"
+                      ? "CA desk. Pick a client, then review flags."
+                      : step
+                        ? `Step: ${step}`
+                        : "Books, 2B and bank"}
                 </div>
               </div>
-              <Link to="/app/2026-09/upload" className="hidden h-10 items-center rounded-full border border-line bg-surface px-4 text-sm sm:inline-flex">
+              <PeriodLink period={period} page="upload" className="hidden h-10 items-center rounded-full border border-line bg-surface px-4 text-sm sm:inline-flex">
                 Files
-              </Link>
+              </PeriodLink>
             </div>
             {step && (
               <ol className="mt-3 hidden items-center gap-2 md:flex">
@@ -154,13 +177,16 @@ export function AppShell({ children, step }: { children: ReactNode; step?: strin
           <main id="main" className="flex-1 px-4 py-5 lg:px-8 lg:py-8">
             {children}
           </main>
+          <footer className="border-t border-line px-4 py-4 lg:px-8">
+            <DesignLink />
+          </footer>
         </div>
       </div>
 
       <nav className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-4 border-t border-line bg-surface lg:hidden">
-        <Tab to="/app/2026-09/review" label="Review" icon={ListChecks} badge={open} />
+        <PeriodTab period={period} page="review" label="Review" icon={ListChecks} badge={open} />
         <Tab to="/app/vendors" label="Vendors" icon={Store} />
-        <Tab to="/app/2026-09/approve" label="Home" icon={Home} />
+        <PeriodTab period={period} page="approve" label="Home" icon={Home} />
         <Tab to="/app/settings" label="Settings" icon={Settings} />
       </nav>
       <Toasts />
@@ -168,7 +194,7 @@ export function AppShell({ children, step }: { children: ReactNode; step?: strin
   );
 }
 
-function Tab({ to, label, icon: Icon, badge }: { to: string; label: string; icon: typeof Home; badge?: number }) {
+function Tab({ to, label, icon: Icon, badge }: { to: "/app/vendors" | "/app/settings"; label: string; icon: typeof Home; badge?: number }) {
   const path = useRouterState({ select: (s) => s.location.pathname });
   const active = path.startsWith(to);
   return (
@@ -177,5 +203,29 @@ function Tab({ to, label, icon: Icon, badge }: { to: string; label: string; icon
       {label}
       {badge ? <span className="absolute right-6 top-2 rounded-full bg-danger px-1.5 text-[13px] text-white">{badge}</span> : null}
     </Link>
+  );
+}
+
+type AppPage = "upload" | "match" | "review" | "matched" | "bank" | "approve" | "export";
+
+function PeriodLink({ period, page, className, children }: { period: string; page: AppPage; className?: string; children: ReactNode }) {
+  if (page === "upload") return <Link to="/app/$period/upload" params={{ period }} className={className}>{children}</Link>;
+  if (page === "match") return <Link to="/app/$period/match" params={{ period }} className={className}>{children}</Link>;
+  if (page === "review") return <Link to="/app/$period/review" params={{ period }} className={className}>{children}</Link>;
+  if (page === "matched") return <Link to="/app/$period/matched" params={{ period }} className={className}>{children}</Link>;
+  if (page === "bank") return <Link to="/app/$period/bank" params={{ period }} className={className}>{children}</Link>;
+  if (page === "approve") return <Link to="/app/$period/approve" params={{ period }} className={className}>{children}</Link>;
+  return <Link to="/app/$period/export" params={{ period }} className={className}>{children}</Link>;
+}
+
+function PeriodTab({ period, page, label, icon: Icon, badge }: { period: string; page: "review" | "approve"; label: string; icon: typeof Home; badge?: number }) {
+  const path = useRouterState({ select: (s) => s.location.pathname });
+  const active = path.startsWith(`/app/${period}/${page}`);
+  return (
+    <PeriodLink period={period} page={page} className={`relative flex h-16 flex-col items-center justify-center gap-0.5 text-[13px] ${active ? "text-accent" : "text-ink-2"}`}>
+      <Icon className="size-5" strokeWidth={1.5} />
+      {label}
+      {badge ? <span className="absolute right-6 top-2 rounded-full bg-danger px-1.5 text-[13px] text-white">{badge}</span> : null}
+    </PeriodLink>
   );
 }

@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { AppShell } from "@/components/settle/shell";
 import { PillButton } from "@/components/settle/ui";
@@ -17,6 +17,8 @@ function Settings() {
   const business = useSettle((s) => s.businessName);
   const gstin = useSettle((s) => s.gstin);
   const [ask, setAsk] = useState(false);
+  const navigate = useNavigate();
+  const period = useSettle((s) => s.period);
   return (
     <AppShell>
       <h1 className="settle-h2">Settings</h1>
@@ -29,14 +31,30 @@ function Settings() {
         <fieldset>
           <legend className="text-sm font-medium">Mode</legend>
           <div className="mt-2 flex gap-2">
-            <PillButton tone={mode === "owner" ? "primary" : "secondary"} onClick={() => setMode("owner")}>
+            <PillButton
+              tone={mode === "owner" ? "primary" : "secondary"}
+              onClick={() => {
+                setMode("owner");
+                navigate({ to: "/app/$period/review", params: { period } });
+              }}
+            >
               Owner
             </PillButton>
-            <PillButton tone={mode === "ca" ? "primary" : "secondary"} onClick={() => setMode("ca")}>
+            <PillButton
+              tone={mode === "ca" ? "primary" : "secondary"}
+              onClick={() => {
+                setMode("ca");
+                navigate({ to: "/app/clients" });
+              }}
+            >
               CA
             </PillButton>
           </div>
-          <p className="mt-2 text-sm text-ink-2">Same books. CA mode is for when you are working across clients.</p>
+          <p className="mt-2 text-sm text-ink-2">
+            {mode === "ca"
+              ? "CA mode opens the client list, then a keyboard-first review. Empty clients stay empty, and Approve stays off."
+              : "Owner mode stays on this business. CA mode is the client list."}
+          </p>
         </fieldset>
         <fieldset>
           <legend className="text-sm font-medium">Theme</legend>
