@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { useSettle } from "@/lib/settle/store";
 import type { Confidence, Flag } from "@/lib/settle/types";
 
-export const DESIGN_NOTE_URL = "https://app.notion.com/p/4013d01bf9e781f68bb0f5e1ba6ffdfd";
+export const DESIGN_NOTE_URL = "https://alivecoldness301.notion.site/Settle-Case-Study-4013d01bf9e781f68bb0f5e1ba6ffdfd";
 
 export function DesignLink({ className = "" }: { className?: string }) {
   return (
