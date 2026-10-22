@@ -168,7 +168,7 @@ export function runMatch(input: {
           itc: taxGap || taxOf(inv),
           reason: taxOnly
             ? `Tax on your bill is ${formatInr(taxOf(inv))}. GSTR-2B shows ${formatInr(taxOf(linked))}.`
-            : `Bill taxable value ${formatInr(a)}, 2B ${formatInr(b)}. Tax at stake ${formatInr(taxGap)}.`,
+            : `Bill taxable ${formatInr(a)}, 2B ${formatInr(b)}. ${formatInr(Math.abs(a - b))} difference at ${inv.rate}% GST: ${formatInr(taxGap)} tax at stake.`,
           diffs: [
             { field: "Taxable", books: formatInr(a), twoB: formatInr(b) },
             { field: "Tax", books: formatInr(taxOf(inv)), twoB: formatInr(taxOf(linked)) },
@@ -264,16 +264,14 @@ function mmPeriod(period: string): string {
 
 function dateFlag(inv: Invoice, linked: TwoBEntry, bankIds: string[], period: string, periodDiff: boolean): Flag {
   const datesDiffer = Boolean(inv.date && linked.date && inv.date !== linked.date);
-  const booked = inv.date ? mmPeriod(inv.date.slice(0, 7)) : mmPeriod(period);
+  const booked = mmPeriod(inv.period || period);
   const filed = mmPeriod(linked.returnPeriod);
-  const claim = mmPeriod(linked.returnPeriod);
+  const claim = mmPeriod(periodDiff ? linked.returnPeriod : inv.period || period);
   let reason: string;
   if (datesDiffer) {
     reason = `Dated ${formatDate(inv.date)} in books, ${formatDate(linked.date)} in 2B.`;
     if (periodDiff) reason += ` Claim it in ${claim}.`;
     else reason += " Amounts match. This is a date note, not a credit block.";
-  } else if (claim !== mmPeriod(period)) {
-    reason = `Booked in ${booked}, filed in ${filed}. Claim it in ${claim}, not ${mmPeriod(period)}.`;
   } else {
     reason = `Booked in ${booked}, filed in ${filed}. Claim it in ${claim}.`;
   }

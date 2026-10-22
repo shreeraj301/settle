@@ -119,7 +119,7 @@ function Slot({
         <div className="mt-4 flex items-center justify-between gap-2 rounded-full bg-success-tint px-3 py-2 text-sm text-success">
           <span className="truncate">
             {state.name}
-            {state.rows != null ? ` · ${state.rows} rows` : ""}
+            {state.rows != null ? ` · ${state.rows} ${state.rows === 1 ? "row" : "rows"}` : ""}
           </span>
           <button type="button" className="shrink-0 underline" onClick={onClear}>
             Remove

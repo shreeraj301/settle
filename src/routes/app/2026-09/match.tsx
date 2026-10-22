@@ -65,7 +65,7 @@ function MatchPage() {
       </div>
 
       <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-line">
-        <div className="h-full bg-accent transition-all" style={{ width: `${(stage / STAGES.length) * 100}%` }} />
+        <div className="h-full bg-accent [transition:width_150ms]" style={{ width: `${(stage / STAGES.length) * 100}%` }} />
       </div>
 
       <div className="mt-6 grid gap-4 lg:grid-cols-3">

@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { AppShell } from "@/components/settle/shell";
 import { Evidence } from "@/components/settle/evidence";
@@ -40,6 +40,10 @@ function Review() {
   const [note, setNote] = useState("");
   const [msg, setMsg] = useState("");
   const navigate = useNavigate();
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const fromPath = pathname.startsWith("/app/2026-09/review/")
+    ? decodeURIComponent(pathname.slice("/app/2026-09/review/".length))
+    : "";
   const locked = status === "approved";
 
   const visible = useMemo(() => {
@@ -51,7 +55,19 @@ function Review() {
     });
   }, [flags, filter]);
 
-  const current = flags.find((f) => f.id === (active ?? visible[0]?.id)) ?? visible[0];
+  const current = flags.find((f) => f.id === (fromPath || active || visible[0]?.id)) ?? visible[0];
+
+  const openFlag = (id: string, sheetOpen = false) => {
+    setActive(id);
+    if (sheetOpen) setSheet(true);
+    navigate({ to: "/app/2026-09/review/$flagId", params: { flagId: id }, replace: true });
+    document.getElementById(`flag-${id}`)?.scrollIntoView({ block: "nearest" });
+  };
+
+  useEffect(() => {
+    if (!fromPath) return;
+    if (window.matchMedia("(max-width: 767px)").matches) setSheet(true);
+  }, [fromPath]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -66,28 +82,22 @@ function Review() {
       const key = e.key.toLowerCase();
       if (key !== "j" && key !== "k" && e.key !== "ArrowDown" && e.key !== "ArrowUp" && e.key !== "?") return;
       const list = visible;
-      const at = list.findIndex((f) => f.id === (active ?? list[0]?.id));
+      const at = list.findIndex((f) => f.id === (fromPath || active || list[0]?.id));
       if (key === "j" || e.key === "ArrowDown") {
         e.preventDefault();
         const n = list[Math.min(list.length - 1, Math.max(0, at) + 1)];
-        if (n) {
-          setActive(n.id);
-          document.getElementById(`flag-${n.id}`)?.scrollIntoView({ block: "nearest" });
-        }
+        if (n) openFlag(n.id, sheet);
       } else if (key === "k" || e.key === "ArrowUp") {
         e.preventDefault();
         const n = list[Math.max(0, (at < 0 ? 0 : at) - 1)];
-        if (n) {
-          setActive(n.id);
-          document.getElementById(`flag-${n.id}`)?.scrollIntoView({ block: "nearest" });
-        }
+        if (n) openFlag(n.id, sheet);
       } else if (e.key === "?") {
         navigate({ to: "/app/help" });
       }
     };
     window.addEventListener("keydown", onKey, true);
     return () => window.removeEventListener("keydown", onKey, true);
-  }, [visible, active, navigate]);
+  }, [visible, active, fromPath, navigate, sheet]);
 
   const totals = itcSummary(flags, matches, invoices, twoB);
   const openCount = flags.filter((f) => f.status === "open").length;
@@ -96,7 +106,7 @@ function Review() {
   const idx = visible.findIndex((f) => f.id === current?.id);
   const go = (dir: number) => {
     const n = visible[idx + dir];
-    if (n) setActive(n.id);
+    if (n) openFlag(n.id, sheet);
   };
 
   if (openCount === 0 && filter === "open") {
@@ -148,7 +158,7 @@ function Review() {
                 <article
                   className={`w-full min-w-0 rounded-xl border bg-surface p-3 text-left ${f.status !== "open" ? "flag-resolved" : ""} ${on ? "border-accent" : "border-line"}`}
                 >
-                  <button className="w-full min-w-0 text-left" onClick={() => { setActive(f.id); setSheet(true); }}>
+                  <button className="w-full min-w-0 text-left" onClick={() => openFlag(f.id, true)}>
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <span className="text-sm font-medium">{FLAG_LABEL[f.type]}</span>
                       <span className="flex flex-wrap items-center gap-1">

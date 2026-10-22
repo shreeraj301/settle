@@ -17,11 +17,8 @@ function Landing() {
 
   return (
     <div className="min-h-screen bg-page text-ink">
-      <header className="mx-auto flex max-w-6xl items-center justify-between px-5 py-5">
+      <header className="mx-auto flex max-w-6xl items-center px-5 py-5">
         <span className="font-display text-[32px] leading-none">Settle</span>
-        <Link to="/app/start" className="text-sm font-medium text-accent">
-          Open the September workspace
-        </Link>
       </header>
       <main className="mx-auto grid max-w-6xl gap-12 px-5 pb-20 pt-6 lg:grid-cols-[1.1fr_0.9fr] lg:items-start lg:pt-10">
         <div>
@@ -32,7 +29,7 @@ function Landing() {
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <Link
               to="/app/start"
-              className="inline-flex h-12 items-center justify-center rounded-full bg-accent px-6 text-[15px] font-medium text-[var(--color-accent-ink)] hover:bg-accent-hover"
+              className="inline-flex h-12 items-center justify-center rounded-full bg-accent px-6 text-[15px] font-medium text-[var(--color-accent-ink)] [transition:background-color_150ms] hover:bg-accent-hover"
             >
               Check September bills
             </Link>

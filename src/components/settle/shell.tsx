@@ -6,7 +6,6 @@ import {
   Home,
   Landmark,
   ListChecks,
-  MoreHorizontal,
   Settings,
   Store,
   Users,
@@ -52,7 +51,7 @@ export function AppShell({ children, step }: { children: ReactNode; step?: strin
 
   const nav = [
     { to: "/app/2026-09/review", label: "Review", icon: ListChecks, badge: open },
-    { to: "/app/2026-09/matched", label: "Matched", icon: CheckCircle2 },
+    { to: "/app/2026-09/matched", label: "Matched bills", icon: CheckCircle2 },
     { to: "/app/2026-09/bank", label: "Bank", icon: Landmark },
     { to: "/app/vendors", label: "Vendors", icon: Users },
     { to: "/app/2026-09/approve", label: "Approve", icon: Home },
@@ -162,7 +161,7 @@ export function AppShell({ children, step }: { children: ReactNode; step?: strin
         <Tab to="/app/2026-09/review" label="Review" icon={ListChecks} badge={open} />
         <Tab to="/app/vendors" label="Vendors" icon={Store} />
         <Tab to="/app/2026-09/approve" label="Home" icon={Home} />
-        <Tab to="/app/settings" label="More" icon={MoreHorizontal} />
+        <Tab to="/app/settings" label="Settings" icon={Settings} />
       </nav>
       <Toasts />
     </div>
@@ -173,10 +172,10 @@ function Tab({ to, label, icon: Icon, badge }: { to: string; label: string; icon
   const path = useRouterState({ select: (s) => s.location.pathname });
   const active = path.startsWith(to);
   return (
-    <Link to={to} className={`relative flex h-16 flex-col items-center justify-center gap-0.5 text-[11px] ${active ? "text-accent" : "text-ink-2"}`}>
+    <Link to={to} className={`relative flex h-16 flex-col items-center justify-center gap-0.5 text-[13px] ${active ? "text-accent" : "text-ink-2"}`}>
       <Icon className="size-5" strokeWidth={1.5} />
       {label}
-      {badge ? <span className="absolute right-6 top-2 rounded-full bg-danger px-1.5 text-[10px] text-white">{badge}</span> : null}
+      {badge ? <span className="absolute right-6 top-2 rounded-full bg-danger px-1.5 text-[13px] text-white">{badge}</span> : null}
     </Link>
   );
 }

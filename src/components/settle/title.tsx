@@ -1,8 +1,9 @@
 import { useRouterState } from "@tanstack/react-router";
 import { useEffect } from "react";
+import { useSettle } from "@/lib/settle/store";
 
 const TITLES: [RegExp, string][] = [
-  [/^\/app\/2026-09\/review\/.+$/, "Flag detail · Sep 2026 · Settle"],
+  [/^\/app\/2026-09\/review\/.+$/, "Flag · Sep 2026 · Settle"],
   [/^\/app\/2026-09\/review$/, "Review flags · Sep 2026 · Settle"],
   [/^\/app\/2026-09\/upload$/, "Upload files · Sep 2026 · Settle"],
   [/^\/app\/2026-09\/match$/, "Match · Sep 2026 · Settle"],
@@ -10,8 +11,7 @@ const TITLES: [RegExp, string][] = [
   [/^\/app\/2026-09\/bank$/, "Bank lines · Sep 2026 · Settle"],
   [/^\/app\/2026-09\/approve$/, "Approve · Sep 2026 · Settle"],
   [/^\/app\/2026-09\/export$/, "Export · Sep 2026 · Settle"],
-  [/^\/app\/vendors\/.+$/, "Vendor · Sep 2026 · Settle"],
-  [/^\/app\/vendors$/, "Vendors · Sep 2026 · Settle"],
+  [/^\/app\/vendors$/, "Vendors · Settle"],
   [/^\/app\/clients$/, "Clients · Settle"],
   [/^\/app\/settings$/, "Settings · Settle"],
   [/^\/app\/help$/, "Help · Settle"],
@@ -27,8 +27,16 @@ export function pageTitle(pathname: string): string {
 
 export function TitleSync() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const vendors = useSettle((s) => s.vendors);
   useEffect(() => {
+    const match = pathname.match(/^\/app\/vendors\/([^/]+)$/);
+    if (match) {
+      const gstin = decodeURIComponent(match[1]);
+      const name = vendors.find((v) => v.gstin === gstin)?.name;
+      document.title = name ? `${name} · Sep 2026 · Settle` : "Vendor · Settle";
+      return;
+    }
     document.title = pageTitle(pathname);
-  }, [pathname]);
+  }, [pathname, vendors]);
   return null;
 }

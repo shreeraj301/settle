@@ -1,8 +1,8 @@
 # Settle
 
-See which GST input credit you can claim this month, and what to fix.
+A client-only prototype. Nothing is uploaded to a server, and there is no account, database, or API.
 
-Settle matches purchase bills, GSTR-2B, and the bank statement for a small Indian business. Every mismatch explains itself, with the rows side by side. The September workspace for Shree Ganesh Traders, Aurangabad, is included so you can walk the full flow without uploading files.
+Settle matches purchase bills, GSTR-2B, and a bank statement for one fictional business, Shree Ganesh Traders of Aurangabad, closing September 2026. The GSTINs, invoice numbers, and amounts are made up. Every mismatch explains itself, with the rows side by side.
 
 ## Run
 
@@ -11,4 +11,4 @@ npm install
 npm run dev
 ```
 
-Open the app, then choose **Open Shree Ganesh Traders**. Review flags, fix a GSTIN, mark a vendor follow-up, approve the period, and export.
+Open the app and choose **Check September bills**, or **Open Shree Ganesh Traders** to skip straight to the matched month. Review a flag, correct a GSTIN, mark a vendor follow-up, approve the period, and export.

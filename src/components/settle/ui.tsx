@@ -18,7 +18,7 @@ export function PillButton({
   };
   return (
     <button
-      className={`inline-flex h-11 items-center justify-center gap-2 rounded-full px-5 text-[15px] font-medium transition active:scale-[0.98] disabled:pointer-events-none disabled:opacity-40 ${tones[tone]} ${className}`}
+      className={`inline-flex h-11 items-center justify-center gap-2 rounded-full px-5 text-[15px] font-medium [transition:background-color_150ms] active:scale-[0.98] disabled:pointer-events-none disabled:opacity-40 ${tones[tone]} ${className}`}
       {...props}
     >
       {children}
