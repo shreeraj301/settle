@@ -1,10 +1,17 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-router";
 import { AppShell } from "@/components/settle/shell";
 import { CopyButton } from "@/components/settle/ui";
 import { formatInr } from "@/lib/settle/format";
 import { followUpMessage, useSettle } from "@/lib/settle/store";
 
-export const Route = createFileRoute("/app/vendors")({ component: Vendors });
+export const Route = createFileRoute("/app/vendors")({ component: VendorsRoute });
+
+function VendorsRoute() {
+  const path = useRouterState({ select: (s) => s.location.pathname });
+  const detail = /^\/app\/vendors\/[^/]+/.test(path);
+  if (detail) return <Outlet />;
+  return <Vendors />;
+}
 
 function Vendors() {
   const vendors = useSettle((s) => s.vendors);
@@ -53,13 +60,13 @@ function Vendors() {
               const mine = flags.filter((f) => {
                 const inv = invoices.find((i) => i.id === f.invoiceId);
                 const row = twoB.find((t) => t.id === f.twoBId);
-                return (inv?.vendorGstin === v.gstin || row?.vendorGstin === v.gstin) && f.status === "open";
+                return (inv?.vendorGstin === v.gstin || row?.vendorGstin === v.gstin || inv?.vendorName === v.name) && f.status === "open";
               });
               const impact = mine.reduce((s, f) => s + f.itcImpact, 0);
               return (
                 <tr key={v.gstin} className="border-t border-line">
                   <th scope="row" className="max-w-[280px] px-3 py-3 text-left font-medium">
-                    <Link to="/app/vendors/$gstin" params={{ gstin: v.gstin }} className="line-clamp-2 text-left">
+                    <Link to="/app/vendors/$gstin" params={{ gstin: v.gstin }} className="text-left text-accent">
                       {v.name}
                     </Link>
                   </th>

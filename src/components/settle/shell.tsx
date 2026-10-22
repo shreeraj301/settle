@@ -127,6 +127,7 @@ export function AppShell({ children, step }: { children: ReactNode; step?: strin
                 <div className="text-[13px] font-medium tracking-wide text-ink-2">
                   {business} · {periodLabel(period)}
                 </div>
+                <div className="text-[13px] text-ink-2">Sample data: fictional business, GSTINs and amounts</div>
                 <div className="text-sm">
                   {status === "approved" ? "Approved. Read only until you reopen." : step ? `Step: ${step}` : "Books, 2B and bank"}
                 </div>

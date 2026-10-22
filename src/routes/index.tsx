@@ -43,9 +43,8 @@ function Landing() {
               Open Shree Ganesh Traders
             </Link>
           </div>
-          <p className="mt-12 border-t border-line pt-8 text-ink-2">
-            Upload, match, review, approve, export. Sample data: Shree Ganesh Traders, Aurangabad.
-          </p>
+          <p className="mt-12 border-t border-line pt-8 text-ink-2">Upload, match, review, approve, export.</p>
+          <p className="mt-3 text-sm font-medium text-ink">Sample data: fictional business, GSTINs and amounts</p>
           <p className="mt-3 max-w-lg text-sm text-ink-2">Correct, add from 2B, ask the vendor, or ignore with a reason.</p>
         </div>
 

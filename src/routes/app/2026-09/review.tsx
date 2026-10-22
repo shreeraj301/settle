@@ -55,22 +55,39 @@ function Review() {
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      const tag = (e.target as HTMLElement).tagName;
-      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
-      const idx = visible.findIndex((f) => f.id === current?.id);
-      if (e.key === "j" || e.key === "ArrowDown") {
-        const n = visible[Math.min(visible.length - 1, idx + 1)];
-        if (n) setActive(n.id);
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      const el = e.target as HTMLElement | null;
+      const tag = el?.tagName;
+      if (tag === "TEXTAREA" || tag === "SELECT") return;
+      if (tag === "INPUT") {
+        const type = (el as HTMLInputElement).type;
+        if (type !== "checkbox" && type !== "radio") return;
       }
-      if (e.key === "k" || e.key === "ArrowUp") {
-        const n = visible[Math.max(0, idx - 1)];
-        if (n) setActive(n.id);
+      const key = e.key.toLowerCase();
+      if (key !== "j" && key !== "k" && e.key !== "ArrowDown" && e.key !== "ArrowUp" && e.key !== "?") return;
+      const list = visible;
+      const at = list.findIndex((f) => f.id === (active ?? list[0]?.id));
+      if (key === "j" || e.key === "ArrowDown") {
+        e.preventDefault();
+        const n = list[Math.min(list.length - 1, Math.max(0, at) + 1)];
+        if (n) {
+          setActive(n.id);
+          document.getElementById(`flag-${n.id}`)?.scrollIntoView({ block: "nearest" });
+        }
+      } else if (key === "k" || e.key === "ArrowUp") {
+        e.preventDefault();
+        const n = list[Math.max(0, (at < 0 ? 0 : at) - 1)];
+        if (n) {
+          setActive(n.id);
+          document.getElementById(`flag-${n.id}`)?.scrollIntoView({ block: "nearest" });
+        }
+      } else if (e.key === "?") {
+        navigate({ to: "/app/help" });
       }
-      if (e.key === "?" ) navigate({ to: "/app/help" });
     };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [visible, current, navigate]);
+    window.addEventListener("keydown", onKey, true);
+    return () => window.removeEventListener("keydown", onKey, true);
+  }, [visible, active, navigate]);
 
   const totals = itcSummary(flags, matches, invoices, twoB);
   const openCount = flags.filter((f) => f.status === "open").length;
@@ -106,6 +123,7 @@ function Review() {
           <p className="text-sm text-ink-2">
             {openCount} open · {followCount} with vendors · {formatInr(totals.atRisk)} at risk · {formatInr(totals.follow)} in follow-up
           </p>
+          <p className="mt-1 text-[13px] text-ink-2">J next flag. K previous.</p>
         </div>
       </div>
       <div className="mt-4 flex max-w-full flex-wrap gap-2">
@@ -126,7 +144,7 @@ function Review() {
             const row = twoB.find((t) => t.id === f.twoBId);
             const on = current?.id === f.id;
             return (
-              <li key={f.id}>
+              <li key={f.id} id={`flag-${f.id}`}>
                 <article
                   className={`w-full min-w-0 rounded-xl border bg-surface p-3 text-left ${f.status !== "open" ? "flag-resolved" : ""} ${on ? "border-accent" : "border-line"}`}
                 >
@@ -230,7 +248,7 @@ function Review() {
         </div>
       )}
 
-      {selected.length >= 2 && !locked && (
+      {selected.length >= 1 && !locked && (
         <div className="fixed inset-x-4 bottom-20 z-40 flex items-center justify-between gap-3 rounded-full border border-line bg-surface px-4 py-2 shadow-[var(--shadow-2)] lg:bottom-6 lg:left-[280px]">
           <span className="text-sm">{selected.length} selected</span>
           <div className="flex gap-2">
